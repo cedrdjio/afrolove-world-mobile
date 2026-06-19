@@ -3,7 +3,7 @@ import 'package:dating/Logic/cubits/onBording_cubit/onbording_cubit.dart';
 import 'package:dating/Logic/cubits/onBording_cubit/onbording_state.dart';
 import 'package:dating/core/config.dart';
 import 'package:dating/data/models/languagemodel.dart';
-import 'package:dating/data/models/relationGoalModel.dart';
+import 'package:dating/data/models/relationgoalmodel.dart';
 import 'package:dating/data/models/religionmodel.dart';
 import 'package:dating/presentation/screens/BottomNavBar/bottombar.dart';
 import 'package:dating/presentation/screens/splash_bording/onBordingProvider/onbording_provider.dart';

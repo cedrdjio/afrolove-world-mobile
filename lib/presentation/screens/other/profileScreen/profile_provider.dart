@@ -17,7 +17,7 @@ import '../../../../data/models/profileimag.dart';
 import '../../../../data/models/unblockapimodel.dart';
 import '../../../../language/localization/app_localization.dart';
 import '../../../firebase/chat_page.dart';
-import '../../Splash_Bording/auth_screen.dart';
+import '../../splash_bording/auth_screen.dart';
 
 class ProfileProvider extends ChangeNotifier {
   List menuList = [

@@ -161,7 +161,7 @@ class Themes {
       fixedSize: const Size.fromHeight(52),
     )),
     cardColor: AppColors.white,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.white,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
@@ -230,7 +230,7 @@ class Themes {
       ),
     ),
     cardColor: AppColors.darkContainer,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.darkContainer,
       surfaceTintColor: Colors.transparent,
       elevation: 0,

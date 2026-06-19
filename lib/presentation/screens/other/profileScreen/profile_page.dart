@@ -7,7 +7,7 @@ import 'package:dating/Logic/cubits/Home_cubit/home_cubit.dart';
 import 'package:dating/Logic/cubits/language_cubit/language_bloc.dart';
 import 'package:dating/Logic/cubits/litedark/lite_dark_cubit.dart';
 import 'package:dating/core/ui.dart';
-import 'package:dating/presentation/screens/Splash_Bording/auth_screen.dart';
+import 'package:dating/presentation/screens/splash_bording/auth_screen.dart';
 import 'package:dating/presentation/screens/other/editProfile/editprofile.dart';
 import 'package:dating/presentation/screens/other/premium/plandetials.dart';
 import 'package:dating/presentation/screens/other/premium/premium.dart';

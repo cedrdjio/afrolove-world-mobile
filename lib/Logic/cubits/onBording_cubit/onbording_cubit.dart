@@ -17,13 +17,13 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/push_notification_function.dart';
 import '../../../data/models/getinterest_model.dart';
-import '../../../data/models/relationGoalModel.dart';
+import '../../../data/models/relationgoalmodel.dart';
 import 'package:flutter/material.dart';
 
 import '../../../extra_otp_code/msg_api_model.dart';
 import '../../../extra_otp_code/sms_type_api_model.dart';
 import '../../../extra_otp_code/twilyo_api_model.dart';
-import '../../../presentation/screens/Splash_Bording/auth_screen.dart';
+import '../../../presentation/screens/splash_bording/auth_screen.dart';
 class OnbordingCubit extends Cubit<OnbordingState> {
   OnbordingCubit() : super(InitState());
 
