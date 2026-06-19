@@ -29,15 +29,15 @@ re‑implements those endpoints on top of the shared tables.
 | `home_data.php` | users, settings, plans, likes, blocks, matches | 3 (core) | ✅ done |
 | `map_info.php` / `filter.php` | users | 3 | ✅ done |
 | `like_dislike.php` / `like_me.php` / `new_match.php` / `passed.php` / `favourite.php` / `del_unlike.php` | likes, matches, users | 3 | ✅ done |
-| `profile_info.php` / `profile_view.php` / `user_info.php` | users | 4 (profile) | ⬜ todo |
-| `edit_profile.php` / `pro_image.php` / `identity_doc.php` | users + storage | 4 | ⬜ todo |
-| `profile_block.php` / `getblocklist.php` / `unblock.php` / `report.php` | reports, (block table TBD) | 4 | ⬜ todo |
-| `plan.php` / `plan_purchase.php` | plans, plan_purchase_history | 5 (money) | ⬜ todo |
-| `paymentgateway.php` | payment_gateways | 5 | ⬜ todo |
-| `wallet_up.php` / `wallet_report.php` | wallet_reports, users | 5 | ⬜ todo |
-| `list_package.php` / `package_purchase.php` / `coin_report.php` | packages, coin_reports, users | 5 | ⬜ todo |
-| `gift_list.php` / `giftbuy.php` / `my_gift.php` | gifts | 5 | ⬜ todo |
-| `request_withdraw.php` / `payout_list.php` | payouts | 5 | ⬜ todo |
+| `profile_info.php` / `profile_view.php` / `user_info.php` | users | 4 (profile) | ✅ done |
+| `edit_profile.php` / `pro_image.php` / `identity_doc.php` | users + storage | 4 | ✅ done |
+| `profile_block.php` / `getblocklist.php` / `unblock.php` / `report.php` | reports, (block table TBD) | 4 | ✅ done |
+| `plan.php` / `plan_purchase.php` | plans, plan_purchase_history | 5 (money) | ✅ done |
+| `paymentgateway.php` | payment_gateways | 5 | ✅ done |
+| `wallet_up.php` / `wallet_report.php` | wallet_reports, users | 5 | ✅ done |
+| `list_package.php` / `package_purchase.php` / `coin_report.php` | packages, coin_reports, users | 5 | ✅ done |
+| `gift_list.php` / `giftbuy.php` / `my_gift.php` | gifts | 5 | ✅ done |
+| `request_withdraw.php` / `payout_list.php` | payouts | 5 | ✅ done |
 | `u_notification_list.php` | notifications | 6 (misc) | ⬜ todo |
 | `faq.php` / `pagelist.php` | faqs, pages | 6 | ⬜ todo |
 | `acc_delete.php` | users | 6 | ⬜ todo |
