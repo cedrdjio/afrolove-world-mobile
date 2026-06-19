@@ -26,9 +26,9 @@ re‑implements those endpoints on top of the shared tables.
 | `user_login.php` | users | 2 | ✅ done |
 | `forget_password.php` | users | 2 | ✅ done |
 | `social_login.php` | users | 2 | ⬜ todo |
-| `home_data.php` | users, settings, plans | 3 (core) | ⬜ todo |
-| `map_info.php` / `filter.php` | users | 3 | ⬜ todo |
-| `like_dislike.php` / `like_me.php` / `new_match.php` / `passed.php` / `favourite.php` / `del_unlike.php` | users, (match tables TBD) | 3 | ⬜ todo |
+| `home_data.php` | users, settings, plans, likes, blocks, matches | 3 (core) | ✅ done |
+| `map_info.php` / `filter.php` | users | 3 | ✅ done |
+| `like_dislike.php` / `like_me.php` / `new_match.php` / `passed.php` / `favourite.php` / `del_unlike.php` | likes, matches, users | 3 | ✅ done |
 | `profile_info.php` / `profile_view.php` / `user_info.php` | users | 4 (profile) | ⬜ todo |
 | `edit_profile.php` / `pro_image.php` / `identity_doc.php` | users + storage | 4 | ⬜ todo |
 | `profile_block.php` / `getblocklist.php` / `unblock.php` / `report.php` | reports, (block table TBD) | 4 | ⬜ todo |
