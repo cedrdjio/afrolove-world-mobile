@@ -1,15 +1,7 @@
-buildscript {
-    ext.kotlin_version = '1.9.0'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.4'
-    }
-}
+// Kotlin (2.3.10) and the Android/Google-Services plugins are declared in
+// settings.gradle's plugins block. The legacy buildscript block that pinned
+// Kotlin 1.9.0 was removed because it conflicted with that declaration and
+// broke the Flutter Gradle plugin (min Kotlin 2.0.0).
 
 allprojects {
     repositories {
