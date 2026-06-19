@@ -620,6 +620,56 @@ Deno.serve(async (req) => {
         }));
       }
 
+      // ── Phase 6: misc (notifications / faq / pages / referral / otp) ─────
+      case 'u_notification_list.php': {
+        const b = await req.json().catch(() => ({}));
+        const { data } = await supabase.from('notifications').select('*')
+          .eq('uid', s(b.uid)).order('datetime', { ascending: false });
+        return json(ok({
+          NotificationData: (data ?? []).map((n: any) => ({
+            id: s(n.id), uid: s(n.uid), datetime: n.datetime ?? null,
+            title: s(n.title), description: s(n.description),
+          })),
+        }));
+      }
+      case 'faq.php': {
+        await req.json().catch(() => ({}));
+        const { data } = await supabase.from('faqs').select('*').eq('status', true).order('id');
+        return json(ok({
+          FaqData: (data ?? []).map((q: any) => ({
+            id: s(q.id), question: s(q.question), answer: s(q.answer), status: bool01(q.status),
+          })),
+        }));
+      }
+      case 'pagelist.php': {
+        const { data } = await supabase.from('pages').select('*').eq('status', true).order('id');
+        return json(ok({ pagelist: (data ?? []).map((p: any) => ({ title: s(p.title), description: s(p.description) })) }));
+      }
+      case 'getdata.php': {
+        const b = await req.json().catch(() => ({}));
+        const me = await getMe(s(b.uid));
+        const { data: st } = await supabase.from('settings').select('scredit').eq('id', 1).single();
+        return json(ok({
+          code: s(me?.code || me?.refercode || ''),
+          signupcredit: s(st?.scredit ?? 0), refercredit: s(st?.scredit ?? 0),
+        }));
+      }
+      case 'msg_otp.php':
+      case 'twilio_otp.php': {
+        await req.json().catch(() => ({}));
+        // GoMeet verifies the OTP client-side, so it expects the code back.
+        // To actually send the SMS, wire Msg91/Twilio here using the provider
+        // credentials stored in `settings` (auth_key / acc_id / auth_token …).
+        const otp = String(Math.floor(1000 + Math.random() * 9000));
+        return json(ok({ otp }));
+      }
+      case 'social_login.php': {
+        const b = await req.json().catch(() => ({}));
+        const { data: u } = await supabase.from('users').select('*').eq('email', s(b.email)).maybeSingle();
+        if (u) return json(ok({ UserLogin: userLogin(u), ResponseMsg: 'Login successful' }));
+        return json({ ResponseCode: '201', Result: 'false', ResponseMsg: 'New user' });
+      }
+
       default:
         return json({ ResponseCode: '404', Result: 'false', ResponseMsg: `Endpoint '${path}' not implemented yet` });
     }

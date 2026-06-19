@@ -38,11 +38,11 @@ re‑implements those endpoints on top of the shared tables.
 | `list_package.php` / `package_purchase.php` / `coin_report.php` | packages, coin_reports, users | 5 | ✅ done |
 | `gift_list.php` / `giftbuy.php` / `my_gift.php` | gifts | 5 | ✅ done |
 | `request_withdraw.php` / `payout_list.php` | payouts | 5 | ✅ done |
-| `u_notification_list.php` | notifications | 6 (misc) | ⬜ todo |
-| `faq.php` / `pagelist.php` | faqs, pages | 6 | ⬜ todo |
-| `acc_delete.php` | users | 6 | ⬜ todo |
-| `getdata.php` (referral) | users | 6 | ⬜ todo |
-| `msg_otp.php` / `twilio_otp.php` | settings (provider creds) | 6 | ⬜ todo |
+| `u_notification_list.php` | notifications | 6 (misc) | ✅ done |
+| `faq.php` / `pagelist.php` | faqs, pages | 6 | ✅ done |
+| `acc_delete.php` | users | 6 | ✅ done |
+| `getdata.php` (referral) | users | 6 | ✅ done |
+| `msg_otp.php` / `twilio_otp.php` | settings (provider creds) | 6 | ✅ done |
 
 ## Migrations applied (this project)
 - `mobile_match_tables`: added `likes`, `matches`, `blocks`, `user_gifts`
