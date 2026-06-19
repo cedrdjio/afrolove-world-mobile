@@ -25,7 +25,7 @@ re‑implements those endpoints on top of the shared tables.
 | `reg_user.php` | users + storage | 2 | ✅ done |
 | `user_login.php` | users | 2 | ✅ done |
 | `forget_password.php` | users | 2 | ✅ done |
-| `social_login.php` | users | 2 | ⬜ todo |
+| `social_login.php` | users | 2 | ✅ done |
 | `home_data.php` | users, settings, plans, likes, blocks, matches | 3 (core) | ✅ done |
 | `map_info.php` / `filter.php` | users | 3 | ✅ done |
 | `like_dislike.php` / `like_me.php` / `new_match.php` / `passed.php` / `favourite.php` / `del_unlike.php` | likes, matches, users | 3 | ✅ done |
