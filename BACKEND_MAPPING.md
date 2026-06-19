@@ -21,11 +21,11 @@ re‑implements those endpoints on top of the shared tables.
 | `languagelist.php` | languages | 1 | ✅ done |
 | `religionlist.php` | religions | 1 | ✅ done |
 | `goal.php` | relation_goals | 1 | ✅ done |
-| `mobile_check.php` | users | 2 (auth) | ⬜ todo |
-| `reg_user.php` | users | 2 | ⬜ todo |
-| `user_login.php` | users | 2 | ⬜ todo |
+| `mobile_check.php` | users | 2 (auth) | ✅ done |
+| `reg_user.php` | users + storage | 2 | ✅ done |
+| `user_login.php` | users | 2 | ✅ done |
+| `forget_password.php` | users | 2 | ✅ done |
 | `social_login.php` | users | 2 | ⬜ todo |
-| `forget_password.php` | users | 2 | ⬜ todo |
 | `home_data.php` | users, settings, plans | 3 (core) | ⬜ todo |
 | `map_info.php` / `filter.php` | users | 3 | ⬜ todo |
 | `like_dislike.php` / `like_me.php` / `new_match.php` / `passed.php` / `favourite.php` / `del_unlike.php` | users, (match tables TBD) | 3 | ⬜ todo |
@@ -44,11 +44,19 @@ re‑implements those endpoints on top of the shared tables.
 | `getdata.php` (referral) | users | 6 | ⬜ todo |
 | `msg_otp.php` / `twilio_otp.php` | settings (provider creds) | 6 | ⬜ todo |
 
-## Notes / decisions still needed
-- **Match/like storage**: the GoMeet API has like/match/block flows but the
-  current Supabase schema has no `likes` / `matches` / `block` tables. These must
-  be added (migration) for Phase 3/4 — confirm before creating.
-- **Auth**: GoMeet used its own user table + Firebase OTP. Phase 2 will validate
-  credentials against `users` (bcrypt) and keep Firebase OTP for phone.
-- **Images**: `edit_profile` / `pro_image` uploads go to Supabase Storage.
+## Migrations applied (this project)
+- `mobile_match_tables`: added `likes`, `matches`, `blocks`, `user_gifts`
+  (RLS on, no public policies — accessed via the Edge Function service role).
+- `users_password_and_height`: added `users.password` (bcrypt) + `users.height`,
+  required by the mobile `mobile + password` auth flow.
+
+## Notes / decisions
+- **Auth**: validated against `users` (bcrypt); Firebase OTP kept for phone
+  verification. The 13 existing demo users have `password = null` (added column)
+  so they must use "forgot password" before they can log in.
+- **Images**: registration/profile uploads go to the public `media` Storage
+  bucket; `other_pic` is a `"$;"`-joined list of URLs, `profile_pic` = first.
 - **Chat**: stays on Firebase Firestore (unchanged) — not part of the REST API.
+- **Testing**: the dev sandbox can't reach `*.supabase.co`, so endpoints are
+  validated by schema + code review here; run the app (or Postman) against
+  `…/functions/v1/api/<endpoint>` to confirm before switching `baseUrl`.
