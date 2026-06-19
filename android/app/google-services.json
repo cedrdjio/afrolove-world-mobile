@@ -400,6 +400,42 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:319710447950:android:4552bb9d524b911ba2f61f",
+        "android_client_info": {
+          "package_name": "com.afriloveworld.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "319710447950-i2jnkaqjr5v66i6scbvo0kg0rrf7r02s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiwebltRgWVv7i_i5ReeoY1K3UKwwF2FU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "319710447950-i2jnkaqjr5v66i6scbvo0kg0rrf7r02s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "319710447950-0iksgkveahl0ovn1ulu54bsido9jicpj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cscodetech.zigzag"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

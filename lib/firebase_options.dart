@@ -65,6 +65,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'redbus-3ec46.appspot.com',
     androidClientId: '319710447950-2ltd456epi1h5g6igoaqsiv2efj4cepg.apps.googleusercontent.com',
     iosClientId: '319710447950-7o1oapai6u596493ehbee68t5a4l5ijk.apps.googleusercontent.com',
-    iosBundleId: 'com.example.gomeet',
+    iosBundleId: 'com.afriloveworld.app',
   );
 }
