@@ -42,20 +42,25 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build release APK (universal)
-        run: flutter build apk --release
+      # Per-ABI APKs only for real phones (arm64-v8a + armeabi-v7a).
+      # No universal APK, no x86_64 (emulators) -> much smaller downloads.
+      - name: Build split APKs (arm64 + arm, minified)
+        run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64
 
-      - name: Build split APKs (per ABI, smaller files)
-        run: flutter build apk --release --split-per-abi
+      # App Bundle for the Play Store (Google ships per-device optimized APKs).
+      - name: Build App Bundle (AAB)
+        run: flutter build appbundle --release
 
-      - name: Upload APK artifacts
+      - name: Report artifact sizes
+        run: ls -lh build/app/outputs/flutter-apk/*.apk build/app/outputs/bundle/release/*.aab
+
+      - name: Upload APK + AAB artifacts
         uses: actions/upload-artifact@v4
         with:
           name: afrilove-world-apk
           if-no-files-found: error
           retention-days: 30
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/bundle/release/app-release.aab

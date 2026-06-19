@@ -65,12 +65,21 @@ android {
 //    }
     buildTypes {
         release {
-            minifyEnabled false
-            shrinkResources false
+            // Shrink + obfuscate Java/Kotlin and strip unused resources to
+            // reduce the release size. Keep rules live in proguard-rules.pro.
+            minifyEnabled true
+            shrinkResources true
             signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile(
                     'proguard-android-optimize.txt'
             ), 'proguard-rules.pro'
+        }
+    }
+
+    // Compress native libraries inside the APK -> noticeably smaller download.
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
         }
     }
 
