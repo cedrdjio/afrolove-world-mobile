@@ -66,5 +66,5 @@ class Config {
   static const String referansearnapi = "/getdata.php";
   static const String paystackapi = "paystack/index.php";
 
-  static String oneSignel = "**************************";
+  static String oneSignel = "d8d58117-dba0-4da5-8ed5-0e5a25505ab4";
 }

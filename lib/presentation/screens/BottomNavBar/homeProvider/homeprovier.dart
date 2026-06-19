@@ -25,7 +25,7 @@ import '../../../../Logic/cubits/Home_cubit/home_cubit.dart';
 import '../../../../data/models/getinterest_model.dart';
 import '../../../../data/models/languagemodel.dart';
 import '../../../../data/models/notificationmodel.dart';
-import '../../../../data/models/relationGoalModel.dart';
+import '../../../../data/models/relationgoalmodel.dart';
 import '../../../../data/models/religionmodel.dart';
 import '../../../../language/localization/app_localization.dart';
 import '../../../../wallete_code/gift_list_api_model.dart';

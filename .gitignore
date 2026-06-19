@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Extra build artifacts
+/android/build/
+/android/.kotlin/
+/android/.gradle/

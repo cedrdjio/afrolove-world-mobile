@@ -8,7 +8,7 @@ import '../../../Logic/cubits/onBording_cubit/onbording_cubit.dart';
 import '../../../language/localization/app_localization.dart';
 import '../BottomNavBar/chats.dart';
 import '../BottomNavBar/home_screen.dart';
-import '../Splash_Bording/auth_screen.dart';
+import '../splash_bording/auth_screen.dart';
 import 'onBordingProvider/onbording_provider.dart';
 
 class OnBoardingScreen extends StatefulWidget {

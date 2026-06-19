@@ -49,14 +49,19 @@ class DefaultFirebaseOptions {
     }
   }
 
+  // AfriLove World Firebase project (afrilove-world).
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDiwebltRgWVv7i_i5ReeoY1K3UKwwF2FU',
-    appId: '1:319710447950:android:4552bb9d524b911ba2f61f',
-    messagingSenderId: '319710447950',
-    projectId: 'redbus-3ec46',
-    storageBucket: 'redbus-3ec46.appspot.com',
+    apiKey: 'AIzaSyDJINNe9iwb6_GYsLi6V_XfTUxgaywuCRE',
+    appId: '1:949332317190:android:f729fb77c3fe3f8279df87',
+    messagingSenderId: '949332317190',
+    projectId: 'afrilove-world',
+    storageBucket: 'afrilove-world.firebasestorage.app',
   );
 
+  // TODO(iOS): still points to the previous project. To enable Firebase on
+  // iOS, register an iOS app (bundle id com.afriloveworld.app) in the
+  // afrilove-world project and replace the values below (or run
+  // `flutterfire configure`).
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCZ-YvGGlTSZh1IcX9OraGn_csnPfpRlM4',
     appId: '1:319710447950:ios:33256ef735bf5158a2f61f',
@@ -65,6 +70,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'redbus-3ec46.appspot.com',
     androidClientId: '319710447950-2ltd456epi1h5g6igoaqsiv2efj4cepg.apps.googleusercontent.com',
     iosClientId: '319710447950-7o1oapai6u596493ehbee68t5a4l5ijk.apps.googleusercontent.com',
-    iosBundleId: 'com.example.gomeet',
+    iosBundleId: 'com.afriloveworld.app',
   );
 }

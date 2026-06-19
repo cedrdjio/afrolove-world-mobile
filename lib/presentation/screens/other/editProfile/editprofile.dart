@@ -4,7 +4,7 @@ import 'package:dating/Logic/cubits/editProfile_cubit/editprofile_state.dart';
 import 'package:dating/Logic/cubits/onBording_cubit/onbording_cubit.dart';
 import 'package:dating/core/config.dart';
 import 'package:dating/core/ui.dart';
-import 'package:dating/data/models/relationGoalModel.dart';
+import 'package:dating/data/models/relationgoalmodel.dart';
 import 'package:dating/data/models/religionmodel.dart';
 import 'package:dating/presentation/screens/other/editProfile/editprofile_provider.dart';
 import 'package:dating/presentation/widgets/main_button.dart';

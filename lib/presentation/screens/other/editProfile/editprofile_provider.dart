@@ -1,5 +1,5 @@
 import 'package:dating/core/ui.dart';
-import 'package:dating/data/models/relationGoalModel.dart';
+import 'package:dating/data/models/relationgoalmodel.dart';
 import 'package:dating/data/models/religionmodel.dart';
 import 'package:dating/data/models/usermodel.dart';
 import 'package:dating/presentation/screens/BottomNavBar/homeProvider/homeprovier.dart';

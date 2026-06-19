@@ -1,5 +1,5 @@
 import 'package:dating/Logic/cubits/onBording_cubit/onbording_cubit.dart';
-import 'package:dating/data/models/relationGoalModel.dart';
+import 'package:dating/data/models/relationgoalmodel.dart';
 import 'package:dating/extra_app_screen.dart';
 import 'package:dating/presentation/screens/splash_bording/onbording_screens.dart';
 import 'package:dating/presentation/widgets/main_button.dart';
