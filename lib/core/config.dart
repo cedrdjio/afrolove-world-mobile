@@ -4,10 +4,14 @@ class Config {
 
   static String? projectID = "***************";
 
-  static const String baseUrl = "https://gomeet.cscodetech.cloud/";
-  
+  // ── AfriLove World backend (Supabase Edge Function `api`) ───────────────
+  // The mobile app and the admin dashboard share the same Supabase database.
+  // Image fields returned by the API are ABSOLUTE URLs (Supabase Storage), and
+  // the UI prefixes them with `baseUrl`, so baseUrl MUST stay empty here.
+  static const String baseUrl = "";
 
-  static const String baseUrlApi = "https://gomeet.cscodetech.cloud/api";
+
+  static const String baseUrlApi = "https://sbvlkjaifqocakgxvdea.supabase.co/functions/v1/api";
   
 
   static const Map<String, dynamic> header = {
