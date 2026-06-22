@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 import { Colors, Shadows } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeContext';
 import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
+import { useAuth } from '@/context/AuthContext';
 
 export default function TabsLayout() {
   const { c, isDark } = useTheme();
+  const { refreshUser } = useAuth();
   usePresenceHeartbeat();
+  useEffect(() => { refreshUser(); }, [refreshUser]);
   return (
     <Tabs
       screenOptions={{

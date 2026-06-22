@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { Wordmark } from '@/components/Logo';
-import { AppText, MainButton, OutlineButton, TextFieldPro } from '@/components/ui';
-import { Colors, Spacing } from '@/theme/theme';
+import { AppText, MainButton, TextFieldPro } from '@/components/ui';
+import { PressableScale } from '@/components/PressableScale';
+import { Colors, Spacing, Radius, Shadows, Gradients } from '@/theme/theme';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
@@ -32,63 +36,102 @@ export default function Login() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: Colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.xl, paddingBottom: insets.bottom + Spacing.xl }]} keyboardShouldPersistTaps="handled">
-        <Wordmark width={190} />
-        <AppText variant="h1" style={{ marginTop: Spacing.lg }}>Sign in</AppText>
-        <AppText variant="bodyM" color={Colors.textSecondary} style={{ marginTop: Spacing.xs }}>
-          Welcome back! Please enter your details.
-        </AppText>
+    <View style={{ flex: 1, backgroundColor: Colors.background }}>
+      {/* Decorative brand hero */}
+      <Animated.View entering={FadeIn.duration(500)}>
+        <LinearGradient colors={Gradients.gold} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.hero, { paddingTop: insets.top + Spacing.xxl }]}>
+          <View style={styles.heroBlob} />
+          <Wordmark width={210} />
+          <AppText variant="overline" color={Colors.primary800} style={{ marginTop: Spacing.sm }}>
+            INTERNATIONAL LOVE, ROOTED IN HERITAGE
+          </AppText>
+        </LinearGradient>
+      </Animated.View>
 
-        <View style={{ marginTop: Spacing.xxl, gap: Spacing.md }}>
-          <TextFieldPro
-            label="Email or Mobile"
-            placeholder="you@example.com / +234..."
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={identifier}
-            onChangeText={setIdentifier}
-          />
-          <View>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.xl }]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
+            <AppText variant="h1">Welcome back</AppText>
+            <AppText variant="bodyM" color={Colors.textSecondary} style={{ marginTop: Spacing.xs }}>
+              Sign in to continue your story.
+            </AppText>
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(160).springify().damping(16)} style={[styles.card, Shadows.card]}>
             <TextFieldPro
-              label="Password"
-              placeholder="••••••••"
-              secureTextEntry={!show}
-              value={password}
-              onChangeText={setPassword}
+              label="Email or Mobile"
+              placeholder="you@example.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={identifier}
+              onChangeText={setIdentifier}
             />
-            <Pressable onPress={() => setShow((s) => !s)} style={styles.showBtn}>
-              <AppText variant="bodyS" color={Colors.secondaryDeep}>{show ? 'Hide' : 'Show'}</AppText>
-            </Pressable>
-          </View>
+            <View>
+              <TextFieldPro label="Password" placeholder="••••••••" secureTextEntry={!show} value={password} onChangeText={setPassword} />
+              <Pressable onPress={() => setShow((s) => !s)} style={styles.showBtn} hitSlop={8}>
+                <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color={Colors.textMuted} />
+              </Pressable>
+            </View>
 
-          <Link href="/(auth)/forgot" asChild>
-            <Pressable style={{ alignSelf: 'flex-end' }}>
-              <AppText variant="bodyS" color={Colors.secondaryDeep}>Forgot password? Reset it</AppText>
-            </Pressable>
-          </Link>
+            <Link href="/(auth)/forgot" asChild>
+              <Pressable style={{ alignSelf: 'flex-end' }} hitSlop={8}>
+                <AppText variant="bodyS" color={Colors.secondaryDeep}>Forgot password?</AppText>
+              </Pressable>
+            </Link>
 
-          {error ? <AppText variant="bodyS" color={Colors.error}>{error}</AppText> : null}
+            {error ? <AppText variant="bodyS" color={Colors.error}>{error}</AppText> : null}
 
-          <MainButton title="Sign in" onPress={onSubmit} loading={loading} style={{ marginTop: Spacing.sm }} />
-          <OutlineButton title="Continue as guest" onPress={onGuest} />
-        </View>
+            <MainButton title="Sign in" onPress={onSubmit} loading={loading} style={{ marginTop: Spacing.xs }} />
+          </Animated.View>
 
-        <View style={styles.footer}>
-          <AppText variant="bodyM" color={Colors.textSecondary}>Don't have an account? </AppText>
-          <Link href="/(auth)/register" asChild>
-            <Pressable>
-              <AppText variant="bodyM" color={Colors.secondaryDeep}>Sign up</AppText>
-            </Pressable>
-          </Link>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <Animated.View entering={FadeInDown.delay(240).springify().damping(16)}>
+            <View style={styles.divider}>
+              <View style={styles.line} />
+              <AppText variant="caption" color={Colors.textMuted}>OR</AppText>
+              <View style={styles.line} />
+            </View>
+            <PressableScale onPress={onGuest} style={[styles.guestBtn, { borderColor: Colors.border }]} to={0.97}>
+              <Ionicons name="sparkles-outline" size={18} color={Colors.primary} />
+              <AppText variant="button" color={Colors.primary}>Explore as guest</AppText>
+            </PressableScale>
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(320)} style={styles.footer}>
+            <AppText variant="bodyM" color={Colors.textSecondary}>New to Afrilove? </AppText>
+            <Link href="/(auth)/register" asChild>
+              <Pressable hitSlop={8}>
+                <AppText variant="bodyM" color={Colors.secondaryDeep}>Create account</AppText>
+              </Pressable>
+            </Link>
+          </Animated.View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: Spacing.screen, flexGrow: 1 },
+  hero: {
+    alignItems: 'center',
+    paddingBottom: Spacing.xxl,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
+    overflow: 'hidden',
+  },
+  heroBlob: { position: 'absolute', top: -60, right: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.18)' },
+  content: { paddingHorizontal: Spacing.screen, paddingTop: Spacing.xl, flexGrow: 1 },
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: Radius.xl,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: Spacing.lg,
+    marginTop: Spacing.lg,
+    gap: Spacing.md,
+  },
   showBtn: { position: 'absolute', right: Spacing.md, top: 38 },
+  divider: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginVertical: Spacing.lg },
+  line: { flex: 1, height: 1, backgroundColor: Colors.border },
+  guestBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.xs, height: 52, borderRadius: Radius.md, borderWidth: 1 },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 'auto', paddingTop: Spacing.xxl },
 });
