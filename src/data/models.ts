@@ -1,69 +1,51 @@
 /**
- * Data models — TypeScript port of lib/data/models/*.
- * Field names mirror the GoMeet JSON contract so API payloads map 1:1.
+ * Data models — shapes returned by the AfriLove Supabase Edge Function gateway.
  */
 
-// ── Auth (usermodel.dart → UserLogin) ───────────────────────────────
-export interface UserLogin {
-  id?: string;
-  name?: string;
-  mobile?: string;
-  email?: string;
-  ccode?: string;
-  gender?: string;
-  wallet?: string;
-  coin?: string;
-  lats?: string;
-  longs?: string;
-  profile_bio?: string;
-  profile_pic?: string | null;
-  other_pic?: string;
-  birth_date?: string;
-  search_preference?: string;
-  radius_search?: string;
-  relation_goal?: string;
-  interest?: string;
-  language?: string;
-  religion?: string;
-  plan_id?: string;
-  refercode?: string;
-  is_verify?: string;
-  status?: string;
+/** Authenticated account (from /auth/login, /auth/register, /me). */
+export interface Account {
+  id: string;
+  name: string;
+  email: string;
+  mobile: string;
+  ccode: string;
+  gender: string;
+  birth_date: string | null;
+  profile_bio: string;
+  profile_pic: string;
+  other_pic: string;
+  images: string[];
+  search_preference: string;
+  radius_search: string;
+  relation_goal: string;
+  interest: string;
+  language: string;
+  religion: string;
+  height: string;
+  lats: string;
+  longs: string;
+  wallet: string;
+  coin: string;
+  plan_id: string;
+  is_subscribe: string;
+  is_verify: string;
+  code: string;
+  refercode: string;
+  status: string;
 }
 
-export interface UserModel {
-  UserLogin?: UserLogin;
-  ResponseCode?: string;
-  Result?: string;
-  ResponseMsg?: string;
-}
-
-// ── Home (homemodel.dart → Profilelist) ─────────────────────────────
-export interface ProfileList {
-  profile_id?: string;
-  profile_name?: string;
-  profile_bio?: string;
-  profile_age?: number;
-  is_subscribe?: string;
-  profile_distance?: string;
-  is_verify?: string;
-  profile_images?: string[];
-  match_ratio?: number;
-}
-
-export interface HomeModel {
-  ResponseCode?: string;
-  Result?: string;
-  ResponseMsg?: string;
-  profilelist?: ProfileList[];
-  totalliked?: ProfileList[];
-  currency?: string;
-  coin?: string;
-  chat?: string;
-  isVerify?: string;
-  plan_name?: string;
-  plan_id?: string;
-  is_subscribe?: string;
+/** A discovery/profile card returned by /home, /matches, /likes-me, etc. */
+export interface ApiProfile {
+  id: string;
+  name: string;
+  bio: string;
+  age: number;
+  gender: string;
+  is_subscribe: string;
+  verified: boolean;
+  distance: string;
+  images: string[];
+  match_ratio: number;
 }
 
 /** Unified card shape consumed by the swipe UI (demo + live share it). */
@@ -79,17 +61,17 @@ export interface Card {
   interests: string[];
 }
 
-/** Map a live Profilelist into the unified Card the UI renders. */
-export function profileToCard(p: ProfileList): Card {
+/** Map a live API profile into the unified Card the UI renders. */
+export function apiProfileToCard(p: ApiProfile): Card {
   return {
-    id: String(p.profile_id ?? ''),
-    name: p.profile_name ?? '',
-    age: p.profile_age ?? 0,
-    bio: p.profile_bio ?? '',
-    distance: p.profile_distance ? `${p.profile_distance} km` : '',
+    id: String(p.id),
+    name: p.name ?? '',
+    age: p.age ?? 0,
+    bio: p.bio ?? '',
+    distance: p.distance && Number(p.distance) > 0 ? `${Math.round(Number(p.distance))} km` : '',
     city: '',
-    verified: p.is_verify === '1' || p.is_verify === 'true',
-    images: (p.profile_images ?? []).filter(Boolean),
+    verified: !!p.verified,
+    images: (p.images ?? []).filter(Boolean),
     interests: [],
   };
 }

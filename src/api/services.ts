@@ -1,87 +1,102 @@
 /**
- * API services — typed wrappers over the GoMeet REST contract.
- * Ports the request shapes from onbording_cubit.dart + home_cubit.dart.
+ * Typed service wrappers over the AfriLove Edge Function routes.
+ * All paths are clean and RESTful — no legacy contract.
  */
-import { post, get, GoMeetResponse } from './client';
-import { UserModel, HomeModel } from '@/data/models';
+import { api, ApiResult } from './client';
+import { Account, ApiProfile } from '@/data/models';
+
+// ── Bootstrap / config ──────────────────────────────────────────────
+export interface ConfigResult extends ApiResult {
+  settings: Record<string, string>;
+  interests: { id: string; title: string; img: string }[];
+  languages: { id: string; title: string; img: string }[];
+  religions: { id: string; title: string }[];
+  goals: { id: string; title: string; subtitle: string }[];
+  plans: Record<string, string>[];
+}
+export const getConfig = () => api.get<ConfigResult>('config');
 
 // ── Auth ────────────────────────────────────────────────────────────
-
-/** sms_type.php — startup settings (otp provider, admob, maintenance...). */
-export function fetchSmsType() {
-  return get<GoMeetResponse>('smsType');
+interface AuthResult extends ApiResult {
+  user?: Account;
+  token?: string;
 }
 
-/** mobile_check.php — does this number already have an account? */
-export function mobileCheck(mobile: string, ccode: string) {
-  return post<GoMeetResponse>('mobileCheck', { mobile, ccode: `+${ccode}` });
-}
-
-/** user_login.php — { mobile, password, ccode } → UserLogin. */
-export function userLogin(mobile: string, password: string, ccode: string) {
-  return post<UserModel>('userLogin', { mobile, password, ccode });
-}
-
-/** social_login.php — { email } → UserLogin or "needs registration" (201). */
-export function socialLogin(email: string) {
-  return post<UserModel>('socialLogin', { email });
-}
-
-/** forget_password.php — { mobile, password, ccode }. */
-export function forgetPassword(mobile: string, password: string, ccode: string) {
-  return post<GoMeetResponse>('forgetPassword', { mobile, password, ccode: `+${ccode}` });
-}
-
-export interface RegisterPayload {
+export interface RegisterInput {
   name: string;
-  email: string;
-  mobile: string;
-  ccode: string;
-  birth_date: string;
-  search_preference: string;
-  radius_search: string;
-  relation_goal: string;
-  profile_bio: string;
-  interest: string;
-  language: string;
+  email?: string;
+  mobile?: string;
+  ccode?: string;
   password: string;
-  refercode: string;
-  gender: string;
-  lats: string;
-  longs: string;
-  religion: string;
+  gender?: string;
+  birth_date?: string;
+  search_preference?: string;
+  relation_goal?: string | number;
+  interest?: string;
+  language?: string;
+  religion?: string | number;
+  profile_bio?: string;
+  lats?: number;
+  longs?: number;
 }
 
-/** reg_user.php — multipart (photos appended as otherpic0..N). */
-export async function registerUser(payload: RegisterPayload, images: { uri: string; name?: string }[] = []) {
-  const form = new FormData();
-  Object.entries(payload).forEach(([k, v]) => form.append(k, v));
-  form.append('size', String(images.length));
-  images.forEach((img, i) => {
-    // @ts-expect-error RN FormData file shape
-    form.append(`otherpic${i}`, { uri: img.uri, name: img.name ?? `photo${i}.jpg`, type: 'image/jpeg' });
-  });
-  return post<UserModel>('registerUser', form as unknown as Record<string, unknown>);
+export const checkMobile = (mobile: string, ccode: string) =>
+  api.post<{ ok: boolean; exists: boolean }>('auth/check-mobile', { mobile, ccode });
+
+export const login = (identifier: string, password: string) =>
+  api.post<AuthResult>('auth/login', { identifier, password });
+
+export const register = (input: RegisterInput) =>
+  api.post<AuthResult>('auth/register', { ...input });
+
+export const forgotPassword = (identifier: string, password: string) =>
+  api.post<AuthResult>('auth/forgot', { identifier, password });
+
+export const fetchMe = () => api.get<AuthResult>('me');
+
+// ── Discovery / matches ─────────────────────────────────────────────
+interface ProfilesResult extends ApiResult {
+  profiles: ApiProfile[];
+}
+export interface HomeResult extends ProfilesResult {
+  currency: string;
+  coin: string;
+  plan_name: string;
+  plan_id: string;
+  is_subscribe: string;
+  is_verify: string;
+  flags: Record<string, string>;
 }
 
-// ── Home / discovery ────────────────────────────────────────────────
+export const home = (lats?: number | string, longs?: number | string) =>
+  api.post<HomeResult>('home', { lats, longs });
 
-/** home_data.php — { uid, lats, longs } → profilelist + meta. */
-export function homeData(uid: string, lats: string, longs: string) {
-  return post<HomeModel>('homeData', { uid, lats, longs });
-}
+export const like = (targetId: string | number, type: 'like' | 'dislike' | 'superlike') =>
+  api.post<{ ok: boolean; matched: boolean }>('like', { target_id: targetId, type });
 
-/** like_dislike.php — { uid, profile_id, action }. */
-export function likeDislike(uid: string, profileId: string, action: 'like' | 'dislike' | 'superlike') {
-  return post<GoMeetResponse>('likeDislike', { uid, profile_id: profileId, action });
-}
+export const likesMe = () => api.post<ProfilesResult>('likes-me', {});
+export const favourites = () => api.post<ProfilesResult>('favourites', {});
+export const matches = () => api.post<ProfilesResult>('matches', {});
 
-/** like_me.php — people who liked the current user. */
-export function likeMe(uid: string) {
-  return post<HomeModel>('likeMe', { uid });
-}
+export const profile = (id: string | number, lats?: number | string, longs?: number | string) =>
+  api.post<ApiResult>('profile', { profile_id: id, lats, longs });
 
-/** new_match.php — current matches. */
-export function newMatch(uid: string) {
-  return post<GoMeetResponse>('newMatch', { uid });
-}
+export const block = (targetId: string | number) => api.post('block', { target_id: targetId });
+export const report = (targetId: string | number, comment: string) =>
+  api.post('report', { target_id: targetId, comment });
+
+// ── Money / catalog ─────────────────────────────────────────────────
+export const getPlans = () => api.get('plans');
+export const getPaymentGateways = () => api.get('payment-gateways');
+export const getPackages = () => api.get('packages');
+export const getGifts = () => api.get('gifts');
+export const purchasePlan = (planId: string | number, method: string, transactionId: string) =>
+  api.post('plan/purchase', { plan_id: planId, method, transaction_id: transactionId });
+export const walletReport = () => api.post('wallet/report', {});
+export const coinReport = () => api.post('coin/report', {});
+
+// ── Misc ────────────────────────────────────────────────────────────
+export const getNotifications = () => api.post('notifications', {});
+export const getFaq = () => api.get('faq');
+export const getPages = () => api.get('pages');
+export const referral = () => api.post('referral', {});

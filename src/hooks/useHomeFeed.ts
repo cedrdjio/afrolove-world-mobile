@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import * as Location from 'expo-location';
-import { homeData, likeDislike } from '@/api/services';
-import { isOk } from '@/api/client';
-import { Card, profileToCard } from '@/data/models';
+import { home, like as apiLike } from '@/api/services';
+import { Card, apiProfileToCard } from '@/data/models';
 import { demoProfiles } from '@/data/demo';
 import { useAuth } from '@/context/AuthContext';
 
@@ -14,13 +13,13 @@ interface FeedState {
   currency?: string;
   coin?: string;
   reload: () => void;
-  like: (profileId: string, action: 'like' | 'dislike' | 'superlike') => void;
+  like: (targetId: string, action: 'like' | 'dislike' | 'superlike') => void;
 }
 
 /**
- * Loads the discovery feed from home_data.php for the logged-in user, resolving
- * the device location for lats/longs. Falls back to demo profiles when the user
- * is a guest or the API is unreachable, so the deck always has cards on Expo Go.
+ * Loads the discovery feed from the Edge Function `/home` route for the logged-in
+ * user, resolving the device location for lats/longs. Falls back to demo profiles
+ * for guests or when the backend is unreachable, so the deck always has cards.
  */
 export function useHomeFeed(): FeedState {
   const { user } = useAuth();
@@ -39,24 +38,24 @@ export function useHomeFeed(): FeedState {
     }
 
     try {
-      let lats = user.lats ?? '0';
-      let longs = user.longs ?? '0';
+      let lats: number | string | undefined = user.lats;
+      let longs: number | string | undefined = user.longs;
       try {
         const { status: perm } = await Location.requestForegroundPermissionsAsync();
         if (perm === 'granted') {
           const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-          lats = String(pos.coords.latitude);
-          longs = String(pos.coords.longitude);
+          lats = pos.coords.latitude;
+          longs = pos.coords.longitude;
         }
       } catch {
-        /* keep stored / default coords */
+        /* keep stored coords */
       }
 
-      const res = await homeData(user.id, lats, longs);
-      if (isOk(res) && res.profilelist) {
+      const res = await home(lats, longs);
+      if (res.ok && Array.isArray(res.profiles)) {
         setCurrency(res.currency);
         setCoin(res.coin);
-        setCards(res.profilelist.map(profileToCard));
+        setCards(res.profiles.map(apiProfileToCard));
         setStatus('live');
       } else {
         setCards(demoProfiles);
@@ -73,9 +72,9 @@ export function useHomeFeed(): FeedState {
   }, [load]);
 
   const like = useCallback(
-    (profileId: string, action: 'like' | 'dislike' | 'superlike') => {
+    (targetId: string, action: 'like' | 'dislike' | 'superlike') => {
       if (!user || user.isDemo || !user.id || user.id === 'demo') return;
-      likeDislike(user.id, profileId, action).catch(() => {});
+      apiLike(targetId, action).catch(() => {});
     },
     [user]
   );

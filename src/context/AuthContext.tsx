@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { isOk } from '@/api/client';
-import { userLogin, forgetPassword } from '@/api/services';
-import { UserLogin } from '@/data/models';
+import { setAuthToken } from '@/api/client';
+import { login as apiLogin, register as apiRegister, forgotPassword as apiForgot, RegisterInput } from '@/api/services';
+import { Account } from '@/data/models';
 
 export interface SessionUser {
   id: string;
@@ -13,34 +13,37 @@ export interface SessionUser {
   profilePic?: string;
   lats?: string;
   longs?: string;
+  coin?: string;
+  isSubscribe?: boolean;
   isDemo?: boolean;
 }
 
 interface AuthValue {
   user: SessionUser | null;
   loading: boolean;
-  /** Logs in against user_login.php. Falls back to a demo session if the API
-   * is unreachable, so the app stays testable on Expo Go. */
-  login: (identifier: string, password: string, ccode?: string) => Promise<{ ok: boolean; message?: string }>;
-  resetPassword: (mobile: string, newPassword: string, ccode?: string) => Promise<{ ok: boolean; message?: string }>;
+  login: (identifier: string, password: string) => Promise<{ ok: boolean; message?: string }>;
+  register: (input: RegisterInput) => Promise<{ ok: boolean; message?: string }>;
+  resetPassword: (identifier: string, newPassword: string) => Promise<{ ok: boolean; message?: string }>;
   loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
-const STORAGE_KEY = '@afrilove/session';
+const SESSION_KEY = '@afrilove/session';
+const TOKEN_KEY = '@afrilove/token';
 const AuthContext = createContext<AuthValue | undefined>(undefined);
 
-function toSession(u: UserLogin, demo = false): SessionUser {
+function toSession(u: Account): SessionUser {
   return {
     id: String(u.id ?? ''),
     name: u.name,
     email: u.email,
     mobile: u.mobile,
     ccode: u.ccode,
-    profilePic: (u.profile_pic ?? u.other_pic ?? '')?.toString().split('$;')[0] || undefined,
+    profilePic: u.profile_pic || u.images?.[0],
     lats: u.lats,
     longs: u.longs,
-    isDemo: demo,
+    coin: u.coin,
+    isSubscribe: u.is_subscribe === '1',
   };
 }
 
@@ -51,54 +54,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        if (raw) setUser(JSON.parse(raw));
+        const [rawUser, token] = await Promise.all([
+          AsyncStorage.getItem(SESSION_KEY),
+          AsyncStorage.getItem(TOKEN_KEY),
+        ]);
+        if (token) setAuthToken(token);
+        if (rawUser) setUser(JSON.parse(rawUser));
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const persist = useCallback(async (u: SessionUser | null) => {
+  const persist = useCallback(async (u: SessionUser | null, token?: string | null) => {
     setUser(u);
-    if (u) await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-    else await AsyncStorage.removeItem(STORAGE_KEY);
+    if (u) await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(u));
+    else await AsyncStorage.removeItem(SESSION_KEY);
+    if (token !== undefined) {
+      setAuthToken(token);
+      if (token) await AsyncStorage.setItem(TOKEN_KEY, token);
+      else await AsyncStorage.removeItem(TOKEN_KEY);
+    }
   }, []);
 
-  const login = useCallback<AuthValue['login']>(async (identifier, password, ccode = '') => {
+  const login = useCallback<AuthValue['login']>(async (identifier, password) => {
     try {
-      const res = await userLogin(identifier, password, ccode);
-      if (isOk(res) && res.UserLogin) {
-        await persist(toSession(res.UserLogin));
+      const res = await apiLogin(identifier.trim(), password);
+      if (res.ok && res.user) {
+        await persist(toSession(res.user), res.token ?? null);
         return { ok: true };
       }
-      return { ok: false, message: res.ResponseMsg ?? 'Invalid credentials' };
+      return { ok: false, message: res.error ?? 'Invalid credentials' };
     } catch {
-      // API unreachable on Expo Go → graceful demo session.
-      await persist({ id: 'demo', name: identifier || 'Guest', mobile: identifier, isDemo: true });
+      // Backend unreachable → offline demo session keeps the app testable.
+      await persist({ id: 'demo', name: identifier || 'Guest', mobile: identifier, isDemo: true }, null);
       return { ok: true, message: 'Offline demo session' };
     }
   }, [persist]);
 
-  const resetPassword = useCallback<AuthValue['resetPassword']>(async (mobile, newPassword, ccode = '') => {
+  const register = useCallback<AuthValue['register']>(async (input) => {
     try {
-      const res = await forgetPassword(mobile, newPassword, ccode);
-      return { ok: isOk(res), message: res.ResponseMsg };
+      const res = await apiRegister(input);
+      if (res.ok && res.user) {
+        await persist(toSession(res.user), res.token ?? null);
+        return { ok: true };
+      }
+      return { ok: false, message: res.error ?? 'Registration failed' };
+    } catch {
+      await persist({ id: 'demo', name: input.name || 'Guest', isDemo: true }, null);
+      return { ok: true, message: 'Offline demo session' };
+    }
+  }, [persist]);
+
+  const resetPassword = useCallback<AuthValue['resetPassword']>(async (identifier, newPassword) => {
+    try {
+      const res = await apiForgot(identifier.trim(), newPassword);
+      return { ok: res.ok, message: res.error };
     } catch {
       return { ok: false, message: 'Network error' };
     }
   }, []);
 
   const loginDemo = useCallback(async () => {
-    await persist({ id: 'demo', name: 'Guest', isDemo: true });
+    await persist({ id: 'demo', name: 'Guest', isDemo: true }, null);
   }, [persist]);
 
   const logout = useCallback(async () => {
-    await persist(null);
+    await persist(null, null);
   }, [persist]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, resetPassword, loginDemo, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, resetPassword, loginDemo, logout }}>
       {children}
     </AuthContext.Provider>
   );

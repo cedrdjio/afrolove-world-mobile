@@ -4,13 +4,34 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, MainButton, TextFieldPro } from '@/components/ui';
 import { Colors, Spacing } from '@/theme/theme';
+import { useAuth } from '@/context/AuthContext';
 
-// Port of recover_email.dart — forget_password.php flow.
+// Password reset — calls the AfriLove /auth/forgot route to set a new password.
 export default function Forgot() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
+  const { resetPassword } = useAuth();
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const onSubmit = async () => {
+    if (!identifier.trim() || password.length < 6) {
+      setMessage({ ok: false, text: 'Enter your email/mobile and a new password (6+ chars).' });
+      return;
+    }
+    setLoading(true);
+    setMessage(null);
+    const res = await resetPassword(identifier.trim(), password);
+    setLoading(false);
+    if (res.ok) {
+      setMessage({ ok: true, text: 'Password updated. You can sign in now.' });
+      setTimeout(() => router.replace('/(auth)/login'), 1200);
+    } else {
+      setMessage({ ok: false, text: res.message ?? 'Could not reset password.' });
+    }
+  };
 
   return (
     <View style={[styles.root, { paddingTop: insets.top + Spacing.lg }]}>
@@ -19,14 +40,15 @@ export default function Forgot() {
       </Pressable>
       <AppText variant="h1">Reset password</AppText>
       <AppText variant="bodyM" color={Colors.textSecondary} style={{ marginTop: Spacing.xs }}>
-        Enter your email and we'll send you a reset link.
+        Enter your email or mobile and choose a new password.
       </AppText>
       <View style={{ marginTop: Spacing.xl, gap: Spacing.md }}>
-        <TextFieldPro label="Email" placeholder="you@example.com" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
-        {sent ? (
-          <AppText variant="bodyS" color={Colors.success}>If an account exists, a reset link is on its way.</AppText>
+        <TextFieldPro label="Email or mobile" placeholder="you@example.com" autoCapitalize="none" value={identifier} onChangeText={setIdentifier} />
+        <TextFieldPro label="New password" placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
+        {message ? (
+          <AppText variant="bodyS" color={message.ok ? Colors.success : Colors.error}>{message.text}</AppText>
         ) : null}
-        <MainButton title="Send reset link" onPress={() => setSent(true)} />
+        <MainButton title="Update password" onPress={onSubmit} loading={loading} />
       </View>
     </View>
   );

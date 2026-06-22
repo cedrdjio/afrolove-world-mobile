@@ -52,13 +52,17 @@
       "typedRoutes": true
     },
     "extra": {
+      "supabase": {
+        "url": "https://sbvlkjaifqocakgxvdea.supabase.co",
+        "publishableKey": "sb_publishable_vewP1o3kkTF2-J9_8SugDA_G5AA5_Gy"
+      },
       "firebase": {
-        "apiKey": "",
-        "authDomain": "",
-        "projectId": "",
-        "storageBucket": "",
-        "messagingSenderId": "",
-        "appId": ""
+        "apiKey": "AIzaSyDJINNe9iwb6_GYsLi6V_XfTUxgaywuCRE",
+        "authDomain": "afrilove-world.firebaseapp.com",
+        "projectId": "afrilove-world",
+        "storageBucket": "afrilove-world.firebasestorage.app",
+        "messagingSenderId": "949332317190",
+        "appId": "1:949332317190:android:f729fb77c3fe3f8279df87"
       }
     }
   }

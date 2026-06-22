@@ -1,57 +1,59 @@
 /**
- * API client — port of lib/core/api.dart (Dio → axios).
- * Talks the GoMeet `*.php` REST contract defined in src/config/config.ts.
+ * API client for the AfriLove Supabase Edge Function gateway.
+ *
+ * Every call carries the publishable key (gateway auth) and, once logged in, a
+ * signed session token in `x-session-token` (the function derives the user from
+ * it). Responses use the clean envelope `{ ok, ...data }` / `{ ok, error }`.
  */
-import axios, { AxiosInstance } from 'axios';
-import { Config, Endpoint } from '@/config/config';
+import { API_BASE, SUPABASE_PUBLISHABLE_KEY } from '@/config/supabase';
 
-const instance: AxiosInstance = axios.create({
-  baseURL: Config.baseUrlApi,
-  headers: Config.header,
-  timeout: 20000,
-});
-
-if (__DEV__) {
-  instance.interceptors.request.use((cfg) => {
-    console.log('[API →]', cfg.method?.toUpperCase(), cfg.url, cfg.data ?? '');
-    return cfg;
-  });
-  instance.interceptors.response.use(
-    (res) => {
-      console.log('[API ←]', res.config.url, res.data?.ResponseCode ?? res.status);
-      return res;
-    },
-    (err) => {
-      console.log('[API ✗]', err.config?.url, err.message);
-      return Promise.reject(err);
-    }
-  );
-}
-
-/** POST a GoMeet endpoint. Returns parsed JSON body (ResponseCode/Result/...).
- * Pass a FormData body for multipart endpoints (e.g. reg_user.php). */
-export async function post<T = any>(endpoint: Endpoint, body: Record<string, unknown> | FormData = {}): Promise<T> {
-  const path = Config.endpoints[endpoint];
-  const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
-  const res = await instance.post<T>(path, body, isForm ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined);
-  return res.data;
-}
-
-/** GET a GoMeet endpoint. */
-export async function get<T = any>(endpoint: Endpoint, params?: Record<string, unknown>): Promise<T> {
-  const path = Config.endpoints[endpoint];
-  const res = await instance.get<T>(path, { params });
-  return res.data;
-}
-
-export interface GoMeetResponse {
-  ResponseCode?: string;
-  Result?: string;
-  ResponseMsg?: string;
+export interface ApiResult {
+  ok: boolean;
+  error?: string;
   [key: string]: unknown;
 }
 
-export const isOk = (r?: { Result?: string; ResponseCode?: string }) =>
-  r?.Result === 'true' || r?.ResponseCode === '200';
+let authToken: string | null = null;
 
-export default instance;
+/** Set/clear the session token used for authenticated routes. */
+export function setAuthToken(token: string | null) {
+  authToken = token;
+}
+
+type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+
+async function call<T extends ApiResult = ApiResult>(
+  method: Method,
+  route: string,
+  body?: Record<string, unknown> | FormData,
+  isForm = false
+): Promise<T> {
+  const headers: Record<string, string> = {
+    apikey: SUPABASE_PUBLISHABLE_KEY,
+    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+  };
+  if (authToken) headers['x-session-token'] = authToken;
+
+  let payload: BodyInit | undefined;
+  if (isForm) {
+    payload = body as FormData; // let fetch set the multipart boundary
+  } else if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    payload = JSON.stringify(body);
+  }
+
+  if (__DEV__) console.log('[api →]', method, route, isForm ? '(form)' : body ?? '');
+  const res = await fetch(`${API_BASE}/${route}`, { method, headers, body: payload });
+  const data = (await res.json().catch(() => ({ ok: false, error: 'Bad response' }))) as T;
+  if (__DEV__) console.log('[api ←]', route, data.ok ? 'ok' : data.error);
+  return data;
+}
+
+export const api = {
+  get: <T extends ApiResult = ApiResult>(route: string) => call<T>('GET', route),
+  post: <T extends ApiResult = ApiResult>(route: string, body?: Record<string, unknown>) => call<T>('POST', route, body),
+  patch: <T extends ApiResult = ApiResult>(route: string, body?: Record<string, unknown>) => call<T>('PATCH', route, body),
+  del: <T extends ApiResult = ApiResult>(route: string) => call<T>('DELETE', route),
+  postForm: <T extends ApiResult = ApiResult>(route: string, form: FormData) => call<T>('POST', route, form, true),
+  patchForm: <T extends ApiResult = ApiResult>(route: string, form: FormData) => call<T>('PATCH', route, form, true),
+};

@@ -1,7 +1,7 @@
 /**
  * Demo data — lets the app run end-to-end on Expo Go without a live account.
- * Mirrors the shape of the GoMeet `home_data.php` profilelist so screens can be
- * swapped to the live API with no UI change.
+ * Mirrors the unified Card shape returned by the live `/home` feed, so screens
+ * render identically whether data is live or demo.
  */
 import { Card } from './models';
 

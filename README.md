@@ -1,119 +1,99 @@
 # Afrilove World — Mobile (React Native + Expo)
 
-Premium international dating app — **React Native + Expo** rewrite of the original
-Flutter app (ex‑GoMeet), keeping the **Afrilove World** visual identity (espresso +
-camel‑gold on warm ivory) shared with the [admin dashboard](https://afrilove-world-admin.vercel.app/).
-
-> This is the migration foundation: the full Afrilove design system, navigation and
-> the core flows are implemented and runnable on **Expo Go** today. Heavy native
-> modules (Agora audio/video, real‑time Firebase chat, PayPal/Razorpay/wallet
-> payments, Google Maps) are scoped as follow‑up phases — see [Roadmap](#roadmap).
+Premium international dating app — **React Native + Expo** client for **AfriLove
+World**, sharing one **Supabase** backend with the
+[Next.js admin dashboard](https://afrilove-world-admin.vercel.app/) and keeping the
+Afrilove visual identity (espresso + camel‑gold on warm ivory).
 
 ---
 
-## ▶️ Test it on your Android phone (Expo Go)
+## ▶️ Run it (Expo Go, Android)
 
-1. Install **Expo Go** from the Play Store.
-2. On your computer:
-   ```bash
-   npm install
-   npx expo start
-   ```
-3. Scan the QR code shown in the terminal with **Expo Go**.
+```bash
+npm install
+npx expo start
+```
 
-> The app needs **Expo Go SDK 56**. If your installed Expo Go is newer/older,
-> install the matching build, or run a dev build. `npx expo start --tunnel` helps
-> if your phone and computer aren't on the same network.
+Scan the QR code with **Expo Go** (SDK 56). On an emulator press `a`; for a quick
+browser preview press `w`. Use `npx expo start --tunnel` if your phone and computer
+aren't on the same network.
 
-Other targets: `npm run android` (emulator), `npm run web` (browser preview).
+### Try it now
+- **Test account:** `test@afrilove.app` / `test1234`
+- or **Continue as guest** on the sign‑in screen (offline demo data).
 
-### No account? It still works
-Tap **"Continue as guest"** on the sign‑in screen (or sign in with anything — if the
-API is unreachable the app falls back to an offline demo session). Discover, swipe,
-likes, matches, chat and premium are all backed by demo data so the whole flow is
-testable immediately.
+If the backend is ever unreachable, the app gracefully falls back to demo data so
+the whole flow stays navigable on Expo Go.
 
 ---
 
-## 🎨 Design system
+## 🏗 Architecture
 
-Faithful port of the Flutter tokens (`DESIGN_SYSTEM.md` → `src/theme/theme.ts`).
+```
+Expo app  ──(publishable key + signed session token)──▶  Supabase Edge Function `api`
+                                                              │ (service-role, server-side)
+                                                              ▼
+                                                         Postgres (shared with admin)
+Realtime chat ───────────────────────────────────────▶  Firebase Firestore
+```
 
-| Token | Value |
+- The app talks **only** to the Edge Function gateway (`supabase/functions/api`),
+  which runs server‑side with the service‑role key and returns a clean
+  `{ ok, ... }` JSON envelope. Routes are RESTful: `/config`, `/auth/login`,
+  `/auth/register`, `/auth/forgot`, `/home`, `/like`, `/likes-me`, `/matches`,
+  `/profile`, `/plans`, `/wallet/*`, `/gifts`, … (no legacy `.php` contract).
+- The app ships only the **publishable (anon) key** — never the secret key. Login
+  returns a signed **session token**; authenticated routes derive the user from it.
+- Chat is realtime on **Firestore**.
+
+## 🔑 Configuration
+
+Backend keys live in `app.json` → `expo.extra` (overridable via `EXPO_PUBLIC_*`):
+
+| Key | Purpose |
 |---|---|
-| Primary (Espresso) | `#2C1B14` |
-| Secondary (Camel Gold) | `#D4A373` |
-| Background (Ivory) | `#F8F4EE` |
-| Card | `#FFFFFF` · radius 24 |
-| Font | Satoshi (swap for Gotham/Inter in `assets/fonts`) |
+| `extra.supabase.url` / `publishableKey` | Supabase project + publishable key |
+| `extra.firebase.*` | Firebase web config for Firestore chat |
 
-Logo: vector port of the Afrilove gradient heart (`src/components/Logo.tsx`).
-Light **and** dark themes are wired (`src/theme/ThemeContext.tsx`).
-
----
+> The Edge Function reads `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from the
+> project's function secrets (auto‑injected) — never stored in the app.
 
 ## 🗂 Structure
 
 ```
-app/                      # expo-router routes (file-based navigation)
-  index.tsx               # animated splash → routing
-  onboarding.tsx          # 4-slide onboarding (original content)
-  (auth)/                 # login · register · forgot password
+app/                      # expo-router screens
+  (auth)/                 # login · register · forgot  → /auth/* routes
   (tabs)/                 # Discover · Likes · Matches · Chats · Profile
-  chat/[id].tsx           # conversation
-  profile/[id].tsx        # profile detail
-  premium.tsx             # Afrilove Gold paywall
+  chat/[id].tsx           # realtime conversation (Firestore)
+  profile/[id].tsx · premium.tsx
 src/
-  theme/                  # design tokens + theme context
-  components/             # Logo, SwipeCard, reusable UI
-  config/config.ts        # backend endpoints (GoMeet contract)
-  api/client.ts           # axios client
-  context/AuthContext.tsx # session / login
-  data/demo.ts            # demo profiles & chats
-assets/                   # fonts (Satoshi), onboarding & brand images
+  config/supabase.ts      # Supabase URL + publishable key + gateway base
+  api/client.ts           # fetch client (publishable key + session token)
+  api/services.ts         # typed wrappers for every gateway route
+  context/AuthContext.tsx # session + token persistence
+  hooks/useHomeFeed.ts    # /home feed + device location + like/dislike
+  firebase/               # Firestore chat
+  data/models.ts · data/demo.ts
+  theme/ · components/
+supabase/functions/api/   # the Edge Function gateway (source of truth)
 ```
-
-## 🔌 Backend
-
-The app speaks the legacy GoMeet `*.php` REST contract (`src/config/config.ts`),
-the same contract being re‑implemented on the shared Supabase Edge Function used by
-the admin dashboard (`BACKEND_MAPPING.md`). Switch `Config.baseUrlApi` to
-`Config.supabaseApi` once auth + home endpoints are live there.
 
 ## 🛣 Roadmap
 
-- [x] Design system, theming, navigation, splash/onboarding
-- [x] Auth (login/register/forgot) + session persistence
-- [x] Discover swipe deck, Likes, Matches
-- [x] Chat list + conversation UI, Profile detail, Premium paywall
-- [x] **Live `user_login` / `home_data` wiring** (typed models + services,
-      device location for `lats/longs`, like/dislike posts, graceful demo fallback)
-- [x] **Firebase realtime chat** (Firestore — add your config to enable)
+- [x] Afrilove design system, theming, navigation, splash/onboarding
+- [x] Auth on Supabase (login/register/forgot) + signed session token
+- [x] Discover `/home` feed (device location, like/dislike, match detection)
+- [x] Likes, Matches, Profile detail, Premium paywall
+- [x] Firebase realtime chat
+- [x] Clean RESTful Edge Function gateway (no legacy contract)
+- [ ] Photo upload on register/edit (multipart already supported by the gateway)
 - [ ] Agora audio/video calls
-- [ ] PayPal / Razorpay / wallet / coins / gifts
-- [ ] Google Maps discovery, push notifications (OneSignal)
-- [ ] Multi‑language (the `lang/*.json` catalog)
+- [ ] In‑app payments (plans, wallet, coins, gifts wired to gateway routes)
+- [ ] Google Maps discovery, push notifications (OneSignal), multi‑language
 
----
+## 💬 Firebase chat note
 
-## 💬 Enable realtime chat (Firebase)
-
-Chat runs on **Firestore** (`src/firebase/`). It works on local demo data until you
-add a Firebase **web app** config — then logged‑in users get live messaging.
-
-1. In the Firebase console, create a Web app and copy its config.
-2. Paste it into `app.json` → `expo.extra.firebase` (or set `EXPO_PUBLIC_FIREBASE_*`
-   env vars), then restart `npx expo start -c`.
-3. Firestore layout used: `chats/{roomId}/messages/{id}` with `roomId` = the two
-   user ids sorted + joined, plus a `chats/{roomId}` summary doc.
-
-When no config is present, `firebaseEnabled` is `false` and the conversation screen
-falls back to local demo messages — still fully navigable on Expo Go.
-
-## 📍 Live data note
-
-`Discover` calls `home_data.php` for the logged‑in user (resolving device location
-for `lats/longs`). Guests and unreachable‑API cases fall back to demo profiles, so the
-deck is never empty. Switch `Config.baseUrlApi` → `Config.supabaseApi` in
-`src/config/config.ts` once the auth + home endpoints are live on the shared Supabase
-Edge Function.
+Chat uses the `afrilove-world` Firebase project (config in `app.json`). Ensure
+Firestore is enabled and its security rules allow your authenticated users to
+read/write `chats/{roomId}/messages`. Without reachable config the conversation
+screen falls back to local demo messages.

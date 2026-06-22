@@ -1,7 +1,7 @@
 /**
  * Realtime chat over Firestore.
  *
- * Data model (matches a typical GoMeet/Firebase chat layout):
+ * Data model (Firestore chat layout):
  *   chats/{roomId}/messages/{messageId}  { text, senderId, createdAt }
  *   chats/{roomId}                        { members, lastMessage, lastAt }
  *
