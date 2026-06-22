@@ -14,7 +14,7 @@ npm install
 npx expo start
 ```
 
-Scan the QR code with **Expo Go** (SDK 56). On an emulator press `a`; for a quick
+Scan the QR code with **Expo Go** (SDK 54). On an emulator press `a`; for a quick
 browser preview press `w`. Use `npx expo start --tunnel` if your phone and computer
 aren't on the same network.
 
