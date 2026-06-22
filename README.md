@@ -86,9 +86,34 @@ the admin dashboard (`BACKEND_MAPPING.md`). Switch `Config.baseUrlApi` to
 - [x] Auth (login/register/forgot) + session persistence
 - [x] Discover swipe deck, Likes, Matches
 - [x] Chat list + conversation UI, Profile detail, Premium paywall
-- [ ] Live Supabase auth + `home_data` wiring
-- [ ] Firebase real‑time chat
+- [x] **Live `user_login` / `home_data` wiring** (typed models + services,
+      device location for `lats/longs`, like/dislike posts, graceful demo fallback)
+- [x] **Firebase realtime chat** (Firestore — add your config to enable)
 - [ ] Agora audio/video calls
 - [ ] PayPal / Razorpay / wallet / coins / gifts
 - [ ] Google Maps discovery, push notifications (OneSignal)
 - [ ] Multi‑language (the `lang/*.json` catalog)
+
+---
+
+## 💬 Enable realtime chat (Firebase)
+
+Chat runs on **Firestore** (`src/firebase/`). It works on local demo data until you
+add a Firebase **web app** config — then logged‑in users get live messaging.
+
+1. In the Firebase console, create a Web app and copy its config.
+2. Paste it into `app.json` → `expo.extra.firebase` (or set `EXPO_PUBLIC_FIREBASE_*`
+   env vars), then restart `npx expo start -c`.
+3. Firestore layout used: `chats/{roomId}/messages/{id}` with `roomId` = the two
+   user ids sorted + joined, plus a `chats/{roomId}` summary doc.
+
+When no config is present, `firebaseEnabled` is `false` and the conversation screen
+falls back to local demo messages — still fully navigable on Expo Go.
+
+## 📍 Live data note
+
+`Discover` calls `home_data.php` for the logged‑in user (resolving device location
+for `lats/longs`). Guests and unreachable‑API cases fall back to demo profiles, so the
+deck is never empty. Switch `Config.baseUrlApi` → `Config.supabaseApi` in
+`src/config/config.ts` once the auth + home endpoints are live on the shared Supabase
+Edge Function.

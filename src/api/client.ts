@@ -28,10 +28,12 @@ if (__DEV__) {
   );
 }
 
-/** POST a GoMeet endpoint. Returns parsed JSON body (ResponseCode/Result/...). */
-export async function post<T = any>(endpoint: Endpoint, body: Record<string, unknown> = {}): Promise<T> {
+/** POST a GoMeet endpoint. Returns parsed JSON body (ResponseCode/Result/...).
+ * Pass a FormData body for multipart endpoints (e.g. reg_user.php). */
+export async function post<T = any>(endpoint: Endpoint, body: Record<string, unknown> | FormData = {}): Promise<T> {
   const path = Config.endpoints[endpoint];
-  const res = await instance.post<T>(path, body);
+  const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
+  const res = await instance.post<T>(path, body, isForm ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined);
   return res.data;
 }
 
@@ -49,6 +51,7 @@ export interface GoMeetResponse {
   [key: string]: unknown;
 }
 
-export const isOk = (r?: GoMeetResponse) => r?.Result === 'true' || r?.ResponseCode === '200';
+export const isOk = (r?: { Result?: string; ResponseCode?: string }) =>
+  r?.Result === 'true' || r?.ResponseCode === '200';
 
 export default instance;

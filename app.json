@@ -26,11 +26,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "single"
     },
     "plugins": [
       "expo-router",
       "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Afrilove uses your location to show people near you."
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -43,6 +50,16 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "firebase": {
+        "apiKey": "",
+        "authDomain": "",
+        "projectId": "",
+        "storageBucket": "",
+        "messagingSenderId": "",
+        "appId": ""
+      }
     }
   }
 }

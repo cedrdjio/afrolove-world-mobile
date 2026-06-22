@@ -3,17 +3,10 @@
  * Mirrors the shape of the GoMeet `home_data.php` profilelist so screens can be
  * swapped to the live API with no UI change.
  */
-export interface Profile {
-  id: string;
-  name: string;
-  age: number;
-  bio: string;
-  distance: string;
-  city: string;
-  verified: boolean;
-  images: string[];
-  interests: string[];
-}
+import { Card } from './models';
+
+/** Demo profiles share the unified Card shape used by the live home_data feed. */
+export type Profile = Card;
 
 const u = (s: string) => `https://images.unsplash.com/${s}?auto=format&fit=crop&w=900&q=80`;
 
