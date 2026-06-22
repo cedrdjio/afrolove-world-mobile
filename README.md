@@ -90,9 +90,27 @@ supabase/functions/api/   # the Edge Function gateway (source of truth)
 - [ ] In‑app payments (plans, wallet, coins, gifts wired to gateway routes)
 - [ ] Google Maps discovery, push notifications (OneSignal), multi‑language
 
-## 💬 Firebase chat note
+## 💬 Realtime chat + Firebase Auth (one identity)
 
-Chat uses the `afrilove-world` Firebase project (config in `app.json`). Ensure
-Firestore is enabled and its security rules allow your authenticated users to
-read/write `chats/{roomId}/messages`. Without reachable config the conversation
-screen falls back to local demo messages.
+Chat/presence run on **Firestore** under **Firebase Auth**, but users keep a
+single identity — their Supabase user id:
+
+1. After Supabase login, the app calls `POST /auth/firebase-token` on the Edge
+   Function, which mints a **Firebase custom token** (`uid` = the Supabase user
+   id) and the app does `signInWithCustomToken`.
+2. Firestore rules (`firestore.rules`) then trust `request.auth.uid` to scope
+   each room to its two members and let users write only their own presence.
+
+### One-time backend setup
+1. **Firebase console → Project settings → Service accounts → Generate new
+   private key.** Copy the downloaded JSON.
+2. **Supabase → Edge Functions → `api` → Secrets**: add
+   `FIREBASE_SERVICE_ACCOUNT` = the full service-account JSON (one line).
+3. **Firebase console → Authentication → Get started** (enables custom-token
+   sign-in).
+4. **Firebase console → Firestore Database → Create database**, then paste
+   `firestore.rules` into the Rules tab and Publish.
+
+Works identically on **iOS and Android** (Firebase JS SDK). Until the secret is
+set the conversation screen falls back to local demo messages, so the app stays
+runnable.

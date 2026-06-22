@@ -12,7 +12,7 @@ import { useTheme } from '@/theme/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { demoChats, demoMessages } from '@/data/demo';
 import { firebaseEnabled } from '@/firebase/config';
-import { roomId, subscribeMessages, subscribeRoom, sendMessage, setTyping, markRead, ChatMessage, RoomMeta } from '@/firebase/chat';
+import { roomId, subscribeMessages, subscribeRoom, sendMessage, setTyping, markRead, ensureRoom, ChatMessage, RoomMeta } from '@/firebase/chat';
 import { subscribePresence } from '@/firebase/presence';
 import { uploadImage } from '@/api/services';
 import { pickImages, appendPhotos } from '@/lib/images';
@@ -58,6 +58,11 @@ export default function Chat() {
   // Realtime subscriptions
   useEffect(() => {
     if (!live) return;
+    ensureRoom(
+      rid,
+      { id: user!.id, name: user!.name ?? 'Me', avatar: user!.profilePic ?? '' },
+      { id, name: peerName, avatar: peerAvatar }
+    );
     const unsubMsg = subscribeMessages(rid, (msgs) => {
       setMessages(msgs);
       markRead(rid, meId);

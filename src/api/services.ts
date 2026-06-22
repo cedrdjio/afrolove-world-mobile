@@ -54,6 +54,9 @@ export const forgotPassword = (identifier: string, password: string) =>
 
 export const fetchMe = () => api.get<AuthResult>('me');
 
+/** Mint a Firebase custom token (uid = this app user) for signInWithCustomToken. */
+export const getFirebaseToken = () => api.post<{ ok: boolean; token: string }>('auth/firebase-token', {});
+
 // ── Discovery / matches ─────────────────────────────────────────────
 interface ProfilesResult extends ApiResult {
   profiles: ApiProfile[];

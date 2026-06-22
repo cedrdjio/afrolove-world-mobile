@@ -12,6 +12,7 @@ import { Colors, Spacing, Radius, Shadows } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeContext';
 import { useHomeFeed } from '@/hooks/useHomeFeed';
 import { useFilter } from '@/context/FilterContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Discover() {
   const insets = useSafeAreaInsets();
@@ -19,7 +20,11 @@ export default function Discover() {
   const { c } = useTheme();
   const { cards, status, like, reload } = useHomeFeed();
   const { active: filterActive } = useFilter();
+  const { user } = useAuth();
   const [index, setIndex] = useState(0);
+
+  const pendingVerify = user?.isVerify === '1';
+  const showVerifyBanner = !!user && !user.isDemo && user.isVerify !== '2';
 
   useEffect(() => {
     setIndex(0);
@@ -58,6 +63,23 @@ export default function Discover() {
           <AppText variant="bodyS" color={Colors.primary}>Gold</AppText>
         </PressableScale>
       </View>
+
+      {showVerifyBanner ? (
+        <Animated.View entering={FadeInDown.springify().damping(18)} style={{ paddingHorizontal: Spacing.screen, paddingBottom: Spacing.xs }}>
+          <PressableScale onPress={() => router.push('/profile/verify')} style={[styles.verifyBanner, { borderColor: c.border, backgroundColor: c.card }, Shadows.soft]} to={0.98}>
+            <View style={styles.verifyIcon}>
+              <Ionicons name={pendingVerify ? 'time' : 'shield-checkmark'} size={18} color={pendingVerify ? Colors.warning : Colors.secondaryDeep} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <AppText variant="label">{pendingVerify ? 'Verification under review' : 'Verify your account'}</AppText>
+              <AppText variant="caption" color={c.textSecondary}>
+                {pendingVerify ? "We'll let you know once it's approved." : 'Get a blue badge and build trust.'}
+              </AppText>
+            </View>
+            {!pendingVerify ? <Ionicons name="chevron-forward" size={18} color={c.textMuted} /> : null}
+          </PressableScale>
+        </Animated.View>
+      ) : null}
 
       <View style={styles.deck}>
         {status === 'loading' ? (
@@ -115,6 +137,8 @@ const styles = StyleSheet.create({
   premiumPill: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.goldLight, paddingHorizontal: Spacing.sm, paddingVertical: 6, borderRadius: Radius.pill },
   iconBtn: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   filterDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.secondary },
+  verifyBanner: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, borderWidth: 1, borderRadius: Radius.lg, padding: Spacing.sm },
+  verifyIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: Colors.goldLight, alignItems: 'center', justifyContent: 'center' },
   deck: { flex: 1, margin: Spacing.screen, marginTop: Spacing.xs },
   actions: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: Spacing.xl },
   actionBtn: { alignItems: 'center', justifyContent: 'center' },

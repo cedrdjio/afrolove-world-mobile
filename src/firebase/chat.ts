@@ -1,8 +1,9 @@
 /**
  * Realtime chat over Firestore.
  *
- *   chats/{roomId}                       { members, lastMessage, lastAt,
- *                                          typing: {uid: bool}, read: {uid: ts} }
+ *   chats/{roomId}                       { members, info:{uid:{name,avatar}},
+ *                                          lastMessage, lastAt, lastSender,
+ *                                          typing:{uid:bool}, read:{uid:ts} }
  *   chats/{roomId}/messages/{messageId}  { text, imageUrl, senderId, createdAt }
  *
  * roomId is the two user ids sorted + joined, so both sides resolve the same room.
@@ -12,7 +13,6 @@ import {
   doc,
   addDoc,
   setDoc,
-  updateDoc,
   onSnapshot,
   query,
   orderBy,
@@ -27,30 +27,38 @@ export interface ChatMessage {
   text: string;
   imageUrl?: string;
   senderId: string;
-  createdAt: number; // ms epoch (0 while the server timestamp is pending)
+  createdAt: number;
 }
 
 export interface RoomMeta {
   typing: Record<string, boolean>;
-  read: Record<string, number>; // uid → last-read ms epoch
+  read: Record<string, number>;
   lastMessage: string;
   lastAt: number;
 }
 
+export interface Participant {
+  name: string;
+  avatar: string;
+}
+
 export interface ChatThread {
   id: string;
-  members: string[];
+  peerId: string;
+  peerName: string;
+  peerAvatar: string;
   lastMessage: string;
   lastAt: number;
+  unread: boolean;
 }
 
 export function roomId(a: string, b: string): string {
   return [a, b].sort().join('__');
 }
 
-const toMs = (t: unknown): number => (t instanceof Timestamp ? t.toMillis() : typeof t === 'number' ? t : 0);
+const toMs = (t: unknown): number =>
+  t instanceof Timestamp ? t.toMillis() : typeof t === 'number' ? t : 0;
 
-/** Subscribe to a room's messages in real time (ascending). */
 export function subscribeMessages(rid: string, cb: (messages: ChatMessage[]) => void): () => void {
   const database = db();
   if (!firebaseEnabled || !database) return () => {};
@@ -71,7 +79,6 @@ export function subscribeMessages(rid: string, cb: (messages: ChatMessage[]) => 
   });
 }
 
-/** Subscribe to the room metadata (typing + read receipts + summary). */
 export function subscribeRoom(rid: string, cb: (meta: RoomMeta) => void): () => void {
   const database = db();
   if (!firebaseEnabled || !database) return () => {};
@@ -83,7 +90,27 @@ export function subscribeRoom(rid: string, cb: (meta: RoomMeta) => void): () => 
   });
 }
 
-/** Send a text and/or image message and update the room summary. */
+/** Store both participants' display info on the room (so the list can render). */
+export async function ensureRoom(
+  rid: string,
+  me: { id: string } & Participant,
+  peer: { id: string } & Participant
+): Promise<void> {
+  const database = db();
+  if (!firebaseEnabled || !database) return;
+  await setDoc(
+    doc(database, 'chats', rid),
+    {
+      members: [me.id, peer.id],
+      info: {
+        [me.id]: { name: me.name, avatar: me.avatar },
+        [peer.id]: { name: peer.name, avatar: peer.avatar },
+      },
+    },
+    { merge: true }
+  ).catch(() => {});
+}
+
 export async function sendMessage(
   rid: string,
   senderId: string,
@@ -105,20 +132,19 @@ export async function sendMessage(
       members: [senderId, peerId],
       lastMessage: payload.imageUrl ? '📷 Photo' : text,
       lastAt: serverTimestamp(),
-      [`typing.${senderId}`]: false,
+      lastSender: senderId,
+      typing: { [senderId]: false },
     },
     { merge: true }
   );
 }
 
-/** Set/clear the current user's typing flag in a room. */
 export async function setTyping(rid: string, uid: string, typing: boolean): Promise<void> {
   const database = db();
   if (!firebaseEnabled || !database) return;
   await setDoc(doc(database, 'chats', rid), { typing: { [uid]: typing } }, { merge: true }).catch(() => {});
 }
 
-/** Mark the room as read up to now for the current user. */
 export async function markRead(rid: string, uid: string): Promise<void> {
   const database = db();
   if (!firebaseEnabled || !database) return;
@@ -134,13 +160,22 @@ export function subscribeThreads(uid: string, cb: (threads: ChatThread[]) => voi
     const threads = snap.docs
       .map((d) => {
         const data = d.data();
+        const members = (data.members ?? []) as string[];
+        const peerId = members.find((m) => m !== uid) ?? '';
+        const info = (data.info ?? {})[peerId] ?? {};
+        const readAt = toMs((data.read ?? {})[uid]);
+        const lastAt = toMs(data.lastAt);
         return {
           id: d.id,
-          members: (data.members ?? []) as string[],
+          peerId,
+          peerName: info.name ?? 'Someone',
+          peerAvatar: info.avatar ?? '',
           lastMessage: data.lastMessage ?? '',
-          lastAt: toMs(data.lastAt),
+          lastAt,
+          unread: data.lastSender && data.lastSender !== uid ? lastAt > readAt : false,
         };
       })
+      .filter((t) => t.lastAt > 0)
       .sort((a, b) => b.lastAt - a.lastAt);
     cb(threads);
   });

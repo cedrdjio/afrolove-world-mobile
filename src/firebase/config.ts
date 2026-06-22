@@ -41,9 +41,15 @@ export const firebaseEnabled = Boolean(config.apiKey && config.projectId && conf
 let app: FirebaseApp | undefined;
 let dbInstance: Firestore | undefined;
 
-export function db(): Firestore | undefined {
+export function firebaseApp(): FirebaseApp | undefined {
   if (!firebaseEnabled) return undefined;
   if (!app) app = getApps().length ? getApp() : initializeApp(config as Required<FbConfig>);
-  if (!dbInstance) dbInstance = getFirestore(app);
+  return app;
+}
+
+export function db(): Firestore | undefined {
+  const a = firebaseApp();
+  if (!a) return undefined;
+  if (!dbInstance) dbInstance = getFirestore(a);
   return dbInstance;
 }

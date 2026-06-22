@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setAuthToken } from '@/api/client';
 import { login as apiLogin, register as apiRegister, forgotPassword as apiForgot, fetchMe, RegisterInput } from '@/api/services';
 import { Account } from '@/data/models';
+import { ensureFirebaseAuth, signOutFirebase } from '@/firebase/auth';
 
 export interface SessionUser {
   id: string;
@@ -72,15 +73,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
+  // Bridge to Firebase Auth: sign in as the app user (custom token) so chat &
+  // presence run under secured Firestore rules; sign out when logged out/demo.
+  useEffect(() => {
+    if (user && !user.isDemo && user.id && user.id !== 'demo') {
+      ensureFirebaseAuth(user.id);
+    } else {
+      signOutFirebase();
+    }
+  }, [user?.id, user?.isDemo]);
+
   const persist = useCallback(async (u: SessionUser | null, token?: string | null) => {
-    setUser(u);
-    if (u) await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(u));
-    else await AsyncStorage.removeItem(SESSION_KEY);
+    // Set the API token BEFORE the user so the Firebase-auth effect (keyed on
+    // user.id) can immediately mint a Firebase token with a valid session.
     if (token !== undefined) {
       setAuthToken(token);
       if (token) await AsyncStorage.setItem(TOKEN_KEY, token);
       else await AsyncStorage.removeItem(TOKEN_KEY);
     }
+    setUser(u);
+    if (u) await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(u));
+    else await AsyncStorage.removeItem(SESSION_KEY);
   }, []);
 
   const login = useCallback<AuthValue['login']>(async (identifier, password) => {
