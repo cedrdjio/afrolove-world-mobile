@@ -445,8 +445,27 @@ const protectedRoutes: Record<string, Handler> = {
     return ok({ user: account(updated) });
   },
 
-  'POST identity': async (_r, b, uid) => {
-    const { data } = await supabase.from('users').update({ identity_picture: s(b.img) }).eq('id', uid).select().single();
+  'POST upload': async (req, _b, uid) => {
+    const ct = req.headers.get('content-type') || '';
+    if (!ct.includes('multipart/form-data')) return fail('Expected multipart form data');
+    const form = await req.formData();
+    const file = form.get('photo0') ?? form.get('file');
+    if (!(file instanceof File)) return fail('No file provided');
+    const url = await uploadFile(file, `chat_${uid}`);
+    return ok({ url });
+  },
+
+  'POST identity': async (req, b, uid) => {
+    let img = s(b.img);
+    const ct = req.headers.get('content-type') || '';
+    if (ct.includes('multipart/form-data')) {
+      const form = await req.formData();
+      const file = form.get('photo0') ?? form.get('document');
+      if (file instanceof File) img = await uploadFile(file, `kyc_${uid}`);
+    }
+    if (!img) return fail('No document provided');
+    // is_verify: 0 = none, 1 = pending review, 2 = verified (set by admin)
+    const { data } = await supabase.from('users').update({ identity_picture: img, is_verify: 1 }).eq('id', uid).select().single();
     return data ? ok({ user: account(data) }) : fail('User not found', 404);
   },
 

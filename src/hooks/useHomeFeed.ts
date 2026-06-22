@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import * as Location from 'expo-location';
-import { home, like as apiLike } from '@/api/services';
+import { home, filterProfiles, like as apiLike } from '@/api/services';
 import { Card, apiProfileToCard } from '@/data/models';
 import { demoProfiles } from '@/data/demo';
 import { useAuth } from '@/context/AuthContext';
+import { useFilter } from '@/context/FilterContext';
 
 export type FeedStatus = 'loading' | 'live' | 'demo' | 'error';
 
@@ -23,6 +24,7 @@ interface FeedState {
  */
 export function useHomeFeed(): FeedState {
   const { user } = useAuth();
+  const { filter, active } = useFilter();
   const [cards, setCards] = useState<Card[]>([]);
   const [status, setStatus] = useState<FeedStatus>('loading');
   const [currency, setCurrency] = useState<string>();
@@ -51,10 +53,20 @@ export function useHomeFeed(): FeedState {
         /* keep stored coords */
       }
 
-      const res = await home(lats, longs);
+      const res = active
+        ? await filterProfiles({
+            lats,
+            longs,
+            radius_search: filter.maxDistance,
+            min_age: filter.minAge,
+            max_age: filter.maxAge,
+            search_preference: filter.gender,
+            verified: filter.verifiedOnly,
+          })
+        : await home(lats, longs);
       if (res.ok && Array.isArray(res.profiles)) {
-        setCurrency(res.currency);
-        setCoin(res.coin);
+        if ('currency' in res) setCurrency((res as { currency?: string }).currency);
+        if ('coin' in res) setCoin((res as { coin?: string }).coin);
         setCards(res.profiles.map(apiProfileToCard));
         setStatus('live');
       } else {
@@ -65,7 +77,7 @@ export function useHomeFeed(): FeedState {
       setCards(demoProfiles);
       setStatus('demo');
     }
-  }, [user]);
+  }, [user, active, filter]);
 
   useEffect(() => {
     load();

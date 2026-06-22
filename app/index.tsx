@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Logo from '@/components/Logo';
+import { Wordmark } from '@/components/Logo';
 import { AppText } from '@/components/ui';
 import { Colors, Spacing } from '@/theme/theme';
 import { useAuth } from '@/context/AuthContext';
@@ -37,11 +37,8 @@ export default function Splash() {
   return (
     <View style={styles.root}>
       <Animated.View style={{ alignItems: 'center', opacity, transform: [{ scale }] }}>
-        <Logo size={104} />
-        <AppText variant="h1" style={{ marginTop: Spacing.lg }}>
-          Afrilove
-        </AppText>
-        <AppText variant="overline" color={Colors.secondaryDeep} style={{ marginTop: Spacing.xs }}>
+        <Wordmark width={300} />
+        <AppText variant="overline" color={Colors.secondaryDeep} style={{ marginTop: Spacing.lg }}>
           INTERNATIONAL LOVE, ROOTED IN HERITAGE
         </AppText>
       </Animated.View>

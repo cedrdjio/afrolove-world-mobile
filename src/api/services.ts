@@ -78,8 +78,37 @@ export const likesMe = () => api.post<ProfilesResult>('likes-me', {});
 export const favourites = () => api.post<ProfilesResult>('favourites', {});
 export const matches = () => api.post<ProfilesResult>('matches', {});
 
+export interface FilterInput {
+  lats?: number | string;
+  longs?: number | string;
+  radius_search?: number;
+  min_age?: number;
+  max_age?: number;
+  search_preference?: string;
+  verified?: boolean;
+}
+export const filterProfiles = (input: FilterInput) => api.post<ProfilesResult>('filter', { ...input });
+
 export const profile = (id: string | number, lats?: number | string, longs?: number | string) =>
   api.post<ApiResult>('profile', { profile_id: id, lats, longs });
+
+// ── Profile edit & KYC (multipart for photos / ID documents) ────────
+interface AccountResult extends ApiResult {
+  user?: Account;
+}
+
+/** PATCH /profile with JSON fields only. */
+export const updateProfile = (fields: Record<string, unknown>) =>
+  api.patch<AccountResult>('profile', fields);
+
+/** PATCH /profile with a multipart form (kept image URLs + new photo files). */
+export const updateProfileForm = (form: FormData) => api.patchForm<AccountResult>('profile', form);
+
+/** POST /identity (KYC) with a multipart form containing the ID document file. */
+export const submitIdentity = (form: FormData) => api.postForm<AccountResult>('identity', form);
+
+/** POST /upload — upload an image (e.g. a chat photo) and get its public URL. */
+export const uploadImage = (form: FormData) => api.postForm<{ ok: boolean; url: string }>('upload', form);
 
 export const block = (targetId: string | number) => api.post('block', { target_id: targetId });
 export const report = (targetId: string | number, comment: string) =>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,8 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { AppText, GoldButton } from '@/components/ui';
 import { Colors, Spacing, Radius, Gradients, Shadows } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
+import { getPlans, purchasePlan } from '@/api/services';
 
-// Port of other/premium/ — Gold subscription paywall.
 const perks = [
   { icon: 'eye', label: 'See who likes you' },
   { icon: 'infinite', label: 'Unlimited swipes' },
@@ -18,17 +19,53 @@ const perks = [
   { icon: 'flash', label: 'Priority likes' },
 ];
 
-const plans = [
-  { id: '12', months: 12, price: '€9.99', per: '/mo', tag: 'Best value' },
-  { id: '6', months: 6, price: '€13.99', per: '/mo', tag: 'Popular' },
-  { id: '1', months: 1, price: '€19.99', per: '/mo', tag: '' },
-];
+interface Plan { id: string; title: string; amt: string; description: string; day_limit: string }
 
 export default function Premium() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { c } = useTheme();
-  const [selected, setSelected] = useState('12');
+  const { user, refreshUser } = useAuth();
+
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [purchasing, setPurchasing] = useState(false);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getPlans();
+        if (res.ok && Array.isArray((res as any).plans)) {
+          const list = (res as any).plans as Plan[];
+          setPlans(list);
+          if (list.length) setSelected(list[0].id);
+        }
+      } catch {
+        /* offline */
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const onContinue = async () => {
+    if (!selected) return;
+    setPurchasing(true);
+    try {
+      // Real PSP capture (Stripe/PayPal) requires a dev build; here we record the
+      // purchase against the gateway with a generated reference.
+      const res = await purchasePlan(selected, 'wallet', `mob_${Date.now()}`);
+      if (res.ok) {
+        setDone(true);
+        await refreshUser();
+        setTimeout(() => router.back(), 1100);
+      }
+    } finally {
+      setPurchasing(false);
+    }
+  };
 
   return (
     <View style={[styles.root, { backgroundColor: c.background }]}>
@@ -56,36 +93,36 @@ export default function Premium() {
         </View>
 
         <View style={{ paddingHorizontal: Spacing.screen, gap: Spacing.sm }}>
-          {plans.map((pl) => {
-            const active = selected === pl.id;
-            return (
-              <Pressable
-                key={pl.id}
-                onPress={() => setSelected(pl.id)}
-                style={[
-                  styles.plan,
-                  { borderColor: active ? Colors.secondary : c.border, backgroundColor: c.card },
-                  active && Shadows.soft,
-                ]}
-              >
-                <View>
-                  <AppText variant="bodyL">{pl.months} months</AppText>
-                  {pl.tag ? <AppText variant="bodyS" color={Colors.secondaryDeep}>{pl.tag}</AppText> : null}
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                  <AppText variant="h3">{pl.price}</AppText>
-                  <AppText variant="bodyS" color={c.textSecondary}>{pl.per}</AppText>
-                </View>
-              </Pressable>
-            );
-          })}
+          {loading ? (
+            <ActivityIndicator color={Colors.primary} />
+          ) : plans.length === 0 ? (
+            <AppText variant="bodyM" color={c.textSecondary}>No plans available right now.</AppText>
+          ) : (
+            plans.map((pl) => {
+              const active = selected === pl.id;
+              return (
+                <Pressable
+                  key={pl.id}
+                  onPress={() => setSelected(pl.id)}
+                  style={[styles.plan, { borderColor: active ? Colors.secondary : c.border, backgroundColor: c.card }, active && Shadows.soft]}
+                >
+                  <View style={{ flex: 1 }}>
+                    <AppText variant="bodyL">{pl.title}</AppText>
+                    {pl.description ? <AppText variant="bodyS" color={c.textSecondary}>{pl.description}</AppText> : null}
+                    <AppText variant="bodyS" color={Colors.secondaryDeep}>{pl.day_limit} days</AppText>
+                  </View>
+                  <AppText variant="h3">{pl.amt}</AppText>
+                </Pressable>
+              );
+            })
+          )}
         </View>
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm, backgroundColor: c.background, borderTopColor: c.border }]}>
-        <GoldButton title="Continue" onPress={() => router.back()} />
+        <GoldButton title={done ? '✓ Subscribed' : purchasing ? 'Processing…' : 'Continue'} onPress={onContinue} />
         <AppText variant="caption" color={c.textMuted} style={{ textAlign: 'center', marginTop: Spacing.xs }}>
-          Recurring billing. Cancel anytime.
+          {user?.isDemo ? 'Demo session — sign in to subscribe.' : 'Recurring billing. Cancel anytime.'}
         </AppText>
       </View>
     </View>

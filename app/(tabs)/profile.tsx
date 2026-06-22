@@ -15,12 +15,24 @@ export default function Profile() {
   const { c, isDark, toggle } = useTheme();
   const { user, logout } = useAuth();
 
+  const verified = user?.isVerify === '2';
+  const pending = user?.isVerify === '1';
+
   const rows: { icon: any; label: string; onPress?: () => void; right?: React.ReactNode }[] = [
-    { icon: 'create-outline', label: 'Edit profile' },
-    { icon: 'options-outline', label: 'Discovery preferences' },
-    { icon: 'shield-checkmark-outline', label: 'Verify your account' },
-    { icon: 'wallet-outline', label: 'Wallet & coins' },
-    { icon: 'gift-outline', label: 'Gifts' },
+    { icon: 'create-outline', label: 'Edit profile', onPress: () => router.push('/profile/edit') },
+    { icon: 'options-outline', label: 'Discovery preferences', onPress: () => router.push('/profile/edit') },
+    {
+      icon: 'shield-checkmark-outline',
+      label: 'Verify your account',
+      onPress: () => router.push('/profile/verify'),
+      right: (
+        <AppText variant="bodyS" color={verified ? Colors.success : pending ? Colors.warning : c.textMuted}>
+          {verified ? 'Verified' : pending ? 'Pending' : 'Verify'}
+        </AppText>
+      ),
+    },
+    { icon: 'wallet-outline', label: 'Wallet & coins', onPress: () => router.push('/wallet') },
+    { icon: 'gift-outline', label: 'Gifts', onPress: () => router.push('/wallet') },
     { icon: 'notifications-outline', label: 'Notifications' },
     {
       icon: 'moon-outline',
@@ -42,7 +54,10 @@ export default function Profile() {
         <View style={[styles.avatarWrap, Shadows.card]}>
           <Image source={require('../../assets/images/img1.jpg')} style={styles.avatar} contentFit="cover" />
         </View>
-        <AppText variant="h2" style={{ marginTop: Spacing.md }}>{user?.name ?? 'Guest'}</AppText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: Spacing.md }}>
+          <AppText variant="h2">{user?.name ?? 'Guest'}</AppText>
+          {verified ? <Ionicons name="checkmark-circle" size={22} color={Colors.secondary} /> : null}
+        </View>
         <AppText variant="bodyM" color={c.textSecondary}>{user?.email ?? user?.mobile ?? 'Welcome to Afrilove'}</AppText>
       </View>
 

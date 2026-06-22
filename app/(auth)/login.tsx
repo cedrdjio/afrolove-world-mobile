@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Logo from '@/components/Logo';
+import { Wordmark } from '@/components/Logo';
 import { AppText, MainButton, OutlineButton, TextFieldPro } from '@/components/ui';
 import { Colors, Spacing } from '@/theme/theme';
 import { useAuth } from '@/context/AuthContext';
@@ -34,7 +34,7 @@ export default function Login() {
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: Colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.xl, paddingBottom: insets.bottom + Spacing.xl }]} keyboardShouldPersistTaps="handled">
-        <Logo size={64} />
+        <Wordmark width={190} />
         <AppText variant="h1" style={{ marginTop: Spacing.lg }}>Sign in</AppText>
         <AppText variant="bodyM" color={Colors.textSecondary} style={{ marginTop: Spacing.xs }}>
           Welcome back! Please enter your details.
