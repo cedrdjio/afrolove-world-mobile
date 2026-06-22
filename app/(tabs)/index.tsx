@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import Logo from '@/components/Logo';
 import SwipeCard, { SwipeDir } from '@/components/SwipeCard';
 import { AppText } from '@/components/ui';
 import { Skeleton } from '@/components/Skeleton';
@@ -12,12 +11,14 @@ import { PressableScale } from '@/components/PressableScale';
 import { Colors, Spacing, Radius, Shadows } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeContext';
 import { useHomeFeed } from '@/hooks/useHomeFeed';
+import { useFilter } from '@/context/FilterContext';
 
 export default function Discover() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { c } = useTheme();
   const { cards, status, like, reload } = useHomeFeed();
+  const { active: filterActive } = useFilter();
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -44,10 +45,13 @@ export default function Discover() {
   return (
     <View style={[styles.root, { backgroundColor: c.background, paddingTop: insets.top + Spacing.xs }]}>
       <View style={styles.header}>
-        <Logo size={34} />
+        <PressableScale onPress={() => router.push('/filter')} style={[styles.iconBtn, { borderColor: c.border, backgroundColor: c.card }]}>
+          <Ionicons name="options-outline" size={20} color={c.textPrimary} />
+          {filterActive ? <View style={styles.filterDot} /> : null}
+        </PressableScale>
         <View style={{ alignItems: 'center' }}>
           <AppText variant="h3">Discover</AppText>
-          {status === 'demo' ? <AppText variant="caption" color={c.textMuted}>demo mode</AppText> : null}
+          {status === 'demo' ? <AppText variant="caption" color={c.textMuted}>demo mode</AppText> : filterActive ? <AppText variant="caption" color={Colors.secondaryDeep}>filtered</AppText> : null}
         </View>
         <PressableScale onPress={() => router.push('/premium')} style={[styles.premiumPill, Shadows.soft]}>
           <Ionicons name="diamond" size={14} color={Colors.primary} />
@@ -109,6 +113,8 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.screen, paddingVertical: Spacing.sm },
   premiumPill: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.goldLight, paddingHorizontal: Spacing.sm, paddingVertical: 6, borderRadius: Radius.pill },
+  iconBtn: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  filterDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.secondary },
   deck: { flex: 1, margin: Spacing.screen, marginTop: Spacing.xs },
   actions: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: Spacing.xl },
   actionBtn: { alignItems: 'center', justifyContent: 'center' },

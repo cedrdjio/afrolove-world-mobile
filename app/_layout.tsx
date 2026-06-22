@@ -7,6 +7,7 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { ThemeProvider } from '@/theme/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { FilterProvider } from '@/context/FilterContext';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -33,19 +34,22 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AuthProvider>
-            <StatusBar style="dark" />
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F8F4EE' } }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="chat/[id]" options={{ presentation: 'card' }} />
-              <Stack.Screen name="profile/[id]" options={{ presentation: 'card' }} />
-              <Stack.Screen name="profile/edit" options={{ presentation: 'card' }} />
-              <Stack.Screen name="profile/verify" options={{ presentation: 'card' }} />
-              <Stack.Screen name="wallet" options={{ presentation: 'card' }} />
-              <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
-            </Stack>
+            <FilterProvider>
+              <StatusBar style="dark" />
+              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F8F4EE' } }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="onboarding" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="chat/[id]" options={{ presentation: 'card' }} />
+                <Stack.Screen name="profile/[id]" options={{ presentation: 'card' }} />
+                <Stack.Screen name="profile/edit" options={{ presentation: 'card' }} />
+                <Stack.Screen name="profile/verify" options={{ presentation: 'card' }} />
+                <Stack.Screen name="wallet" options={{ presentation: 'card' }} />
+                <Stack.Screen name="filter" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
+              </Stack>
+            </FilterProvider>
           </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>

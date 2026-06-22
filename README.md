@@ -87,7 +87,6 @@ supabase/functions/api/   # the Edge Function gateway (source of truth)
 - [x] Firebase realtime chat
 - [x] Clean RESTful Edge Function gateway (no legacy contract)
 - [ ] Photo upload on register/edit (multipart already supported by the gateway)
-- [ ] Agora audio/video calls
 - [ ] In‑app payments (plans, wallet, coins, gifts wired to gateway routes)
 - [ ] Google Maps discovery, push notifications (OneSignal), multi‑language
 

@@ -78,6 +78,17 @@ export const likesMe = () => api.post<ProfilesResult>('likes-me', {});
 export const favourites = () => api.post<ProfilesResult>('favourites', {});
 export const matches = () => api.post<ProfilesResult>('matches', {});
 
+export interface FilterInput {
+  lats?: number | string;
+  longs?: number | string;
+  radius_search?: number;
+  min_age?: number;
+  max_age?: number;
+  search_preference?: string;
+  verified?: boolean;
+}
+export const filterProfiles = (input: FilterInput) => api.post<ProfilesResult>('filter', { ...input });
+
 export const profile = (id: string | number, lats?: number | string, longs?: number | string) =>
   api.post<ApiResult>('profile', { profile_id: id, lats, longs });
 
