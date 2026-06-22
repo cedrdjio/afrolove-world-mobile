@@ -1,19 +1,12 @@
 /**
  * Demo data — lets the app run end-to-end on Expo Go without a live account.
- * Mirrors the shape of the GoMeet `home_data.php` profilelist so screens can be
- * swapped to the live API with no UI change.
+ * Mirrors the unified Card shape returned by the live `/home` feed, so screens
+ * render identically whether data is live or demo.
  */
-export interface Profile {
-  id: string;
-  name: string;
-  age: number;
-  bio: string;
-  distance: string;
-  city: string;
-  verified: boolean;
-  images: string[];
-  interests: string[];
-}
+import { Card } from './models';
+
+/** Demo profiles share the unified Card shape used by the live home_data feed. */
+export type Profile = Card;
 
 const u = (s: string) => `https://images.unsplash.com/${s}?auto=format&fit=crop&w=900&q=80`;
 

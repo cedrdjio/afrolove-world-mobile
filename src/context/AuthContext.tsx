@@ -1,27 +1,51 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { post, isOk, GoMeetResponse } from '@/api/client';
+import { setAuthToken } from '@/api/client';
+import { login as apiLogin, register as apiRegister, forgotPassword as apiForgot, RegisterInput } from '@/api/services';
+import { Account } from '@/data/models';
 
 export interface SessionUser {
   id: string;
   name?: string;
   email?: string;
   mobile?: string;
+  ccode?: string;
   profilePic?: string;
+  lats?: string;
+  longs?: string;
+  coin?: string;
+  isSubscribe?: boolean;
+  isDemo?: boolean;
 }
 
 interface AuthValue {
   user: SessionUser | null;
   loading: boolean;
-  /** Logs in against user_login.php. Falls back to a demo session if the API
-   * is unreachable, so the app stays testable on Expo Go. */
   login: (identifier: string, password: string) => Promise<{ ok: boolean; message?: string }>;
+  register: (input: RegisterInput) => Promise<{ ok: boolean; message?: string }>;
+  resetPassword: (identifier: string, newPassword: string) => Promise<{ ok: boolean; message?: string }>;
   loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
-const STORAGE_KEY = '@afrilove/session';
+const SESSION_KEY = '@afrilove/session';
+const TOKEN_KEY = '@afrilove/token';
 const AuthContext = createContext<AuthValue | undefined>(undefined);
+
+function toSession(u: Account): SessionUser {
+  return {
+    id: String(u.id ?? ''),
+    name: u.name,
+    email: u.email,
+    mobile: u.mobile,
+    ccode: u.ccode,
+    profilePic: u.profile_pic || u.images?.[0],
+    lats: u.lats,
+    longs: u.longs,
+    coin: u.coin,
+    isSubscribe: u.is_subscribe === '1',
+  };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -30,52 +54,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        if (raw) setUser(JSON.parse(raw));
+        const [rawUser, token] = await Promise.all([
+          AsyncStorage.getItem(SESSION_KEY),
+          AsyncStorage.getItem(TOKEN_KEY),
+        ]);
+        if (token) setAuthToken(token);
+        if (rawUser) setUser(JSON.parse(rawUser));
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const persist = useCallback(async (u: SessionUser | null) => {
+  const persist = useCallback(async (u: SessionUser | null, token?: string | null) => {
     setUser(u);
-    if (u) await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-    else await AsyncStorage.removeItem(STORAGE_KEY);
+    if (u) await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(u));
+    else await AsyncStorage.removeItem(SESSION_KEY);
+    if (token !== undefined) {
+      setAuthToken(token);
+      if (token) await AsyncStorage.setItem(TOKEN_KEY, token);
+      else await AsyncStorage.removeItem(TOKEN_KEY);
+    }
   }, []);
 
   const login = useCallback<AuthValue['login']>(async (identifier, password) => {
     try {
-      const res = await post<GoMeetResponse>('userLogin', { mobile: identifier, password });
-      if (isOk(res)) {
-        const login = (res as any).UserLogin ?? {};
-        await persist({
-          id: String(login.id ?? ''),
-          name: login.name,
-          email: login.email,
-          mobile: login.mobile,
-          profilePic: login.profile_pic,
-        });
+      const res = await apiLogin(identifier.trim(), password);
+      if (res.ok && res.user) {
+        await persist(toSession(res.user), res.token ?? null);
         return { ok: true };
       }
-      return { ok: false, message: res.ResponseMsg ?? 'Invalid credentials' };
-    } catch (e) {
-      // API unreachable on Expo Go → graceful demo session.
-      await persist({ id: 'demo', name: identifier || 'Guest', mobile: identifier });
+      return { ok: false, message: res.error ?? 'Invalid credentials' };
+    } catch {
+      // Backend unreachable → offline demo session keeps the app testable.
+      await persist({ id: 'demo', name: identifier || 'Guest', mobile: identifier, isDemo: true }, null);
       return { ok: true, message: 'Offline demo session' };
     }
   }, [persist]);
 
+  const register = useCallback<AuthValue['register']>(async (input) => {
+    try {
+      const res = await apiRegister(input);
+      if (res.ok && res.user) {
+        await persist(toSession(res.user), res.token ?? null);
+        return { ok: true };
+      }
+      return { ok: false, message: res.error ?? 'Registration failed' };
+    } catch {
+      await persist({ id: 'demo', name: input.name || 'Guest', isDemo: true }, null);
+      return { ok: true, message: 'Offline demo session' };
+    }
+  }, [persist]);
+
+  const resetPassword = useCallback<AuthValue['resetPassword']>(async (identifier, newPassword) => {
+    try {
+      const res = await apiForgot(identifier.trim(), newPassword);
+      return { ok: res.ok, message: res.error };
+    } catch {
+      return { ok: false, message: 'Network error' };
+    }
+  }, []);
+
   const loginDemo = useCallback(async () => {
-    await persist({ id: 'demo', name: 'Guest' });
+    await persist({ id: 'demo', name: 'Guest', isDemo: true }, null);
   }, [persist]);
 
   const logout = useCallback(async () => {
-    await persist(null);
+    await persist(null, null);
   }, [persist]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginDemo, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, resetPassword, loginDemo, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, FlatList, Pressable } from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { PressableScale } from '@/components/PressableScale';
 import { AppText, TextFieldPro } from '@/components/ui';
 import { Colors, Spacing, Radius } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeContext';
@@ -27,29 +29,31 @@ export default function Chats() {
         data={data}
         keyExtractor={(t) => t.id}
         contentContainerStyle={{ paddingBottom: insets.bottom + 90 }}
-        renderItem={({ item }) => (
-          <Pressable onPress={() => router.push(`/chat/${item.id}`)} style={styles.row}>
-            <View>
-              <Image source={{ uri: item.avatar }} style={styles.avatar} contentFit="cover" />
-              {item.online ? <View style={styles.online} /> : null}
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={styles.topLine}>
-                <AppText variant="bodyL">{item.name}</AppText>
-                <AppText variant="caption" color={c.textMuted}>{item.time}</AppText>
+        renderItem={({ item, index }) => (
+          <Animated.View entering={FadeInDown.delay(index * 60).springify().damping(18)}>
+            <PressableScale onPress={() => router.push(`/chat/${item.id}`)} style={styles.row} to={0.97}>
+              <View>
+                <Image source={{ uri: item.avatar }} style={styles.avatar} contentFit="cover" />
+                {item.online ? <View style={styles.online} /> : null}
               </View>
-              <View style={styles.topLine}>
-                <AppText variant="bodyS" color={c.textSecondary} numberOfLines={1} style={{ flex: 1 }}>
-                  {item.last}
-                </AppText>
-                {item.unread > 0 ? (
-                  <View style={styles.badge}>
-                    <AppText variant="caption" color={Colors.white}>{item.unread}</AppText>
-                  </View>
-                ) : null}
+              <View style={{ flex: 1 }}>
+                <View style={styles.topLine}>
+                  <AppText variant="bodyL">{item.name}</AppText>
+                  <AppText variant="caption" color={c.textMuted}>{item.time}</AppText>
+                </View>
+                <View style={styles.topLine}>
+                  <AppText variant="bodyS" color={c.textSecondary} numberOfLines={1} style={{ flex: 1 }}>
+                    {item.last}
+                  </AppText>
+                  {item.unread > 0 ? (
+                    <View style={styles.badge}>
+                      <AppText variant="caption" color={Colors.white}>{item.unread}</AppText>
+                    </View>
+                  ) : null}
+                </View>
               </View>
-            </View>
-          </Pressable>
+            </PressableScale>
+          </Animated.View>
         )}
       />
     </View>

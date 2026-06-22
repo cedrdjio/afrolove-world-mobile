@@ -1,76 +1,89 @@
-import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import Logo from '@/components/Logo';
 import SwipeCard, { SwipeDir } from '@/components/SwipeCard';
 import { AppText } from '@/components/ui';
+import { Skeleton } from '@/components/Skeleton';
+import { PressableScale } from '@/components/PressableScale';
 import { Colors, Spacing, Radius, Shadows } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeContext';
-import { demoProfiles } from '@/data/demo';
+import { useHomeFeed } from '@/hooks/useHomeFeed';
 
 export default function Discover() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { c } = useTheme();
+  const { cards, status, like, reload } = useHomeFeed();
   const [index, setIndex] = useState(0);
-  const profiles = demoProfiles;
 
-  const onSwiped = useCallback((_dir: SwipeDir) => {
-    // TODO: POST like_dislike.php with the swipe direction.
+  useEffect(() => {
+    setIndex(0);
+  }, [cards]);
+
+  const onSwiped = useCallback(
+    (dir: SwipeDir) => {
+      const card = cards[index];
+      if (card) like(card.id, dir === 'right' ? 'like' : 'dislike');
+      setIndex((i) => i + 1);
+    },
+    [cards, index, like]
+  );
+
+  const swipeButton = (dir: SwipeDir) => {
+    const card = cards[index];
+    if (card) like(card.id, dir === 'right' ? 'like' : 'dislike');
     setIndex((i) => i + 1);
-  }, []);
+  };
 
-  const swipeButton = (dir: SwipeDir) => setIndex((i) => i + 1);
-
-  const remaining = profiles.slice(index, index + 2).reverse();
+  const remaining = cards.slice(index, index + 2).reverse();
 
   return (
     <View style={[styles.root, { backgroundColor: c.background, paddingTop: insets.top + Spacing.xs }]}>
       <View style={styles.header}>
         <Logo size={34} />
-        <AppText variant="h3">Discover</AppText>
-        <Pressable onPress={() => router.push('/premium')} style={[styles.premiumPill, Shadows.soft]}>
+        <View style={{ alignItems: 'center' }}>
+          <AppText variant="h3">Discover</AppText>
+          {status === 'demo' ? <AppText variant="caption" color={c.textMuted}>demo mode</AppText> : null}
+        </View>
+        <PressableScale onPress={() => router.push('/premium')} style={[styles.premiumPill, Shadows.soft]}>
           <Ionicons name="diamond" size={14} color={Colors.primary} />
           <AppText variant="bodyS" color={Colors.primary}>Gold</AppText>
-        </Pressable>
+        </PressableScale>
       </View>
 
       <View style={styles.deck}>
-        {index >= profiles.length ? (
-          <View style={styles.empty}>
+        {status === 'loading' ? (
+          <Skeleton style={{ flex: 1, borderRadius: Radius.xl }} />
+        ) : index >= cards.length ? (
+          <Animated.View entering={FadeIn} style={styles.empty}>
             <Ionicons name="sparkles-outline" size={48} color={c.textMuted} />
             <AppText variant="h3" style={{ marginTop: Spacing.md }}>You're all caught up</AppText>
             <AppText variant="bodyM" color={c.textSecondary} style={{ textAlign: 'center', marginTop: Spacing.xs }}>
               Check back soon for new people near you.
             </AppText>
-            <Pressable onPress={() => setIndex(0)} style={[styles.reload, Shadows.soft]}>
-              <AppText variant="button" color={Colors.white}>Start over</AppText>
-            </Pressable>
-          </View>
+            <PressableScale onPress={reload} style={[styles.reload, Shadows.soft]}>
+              <AppText variant="button" color={Colors.white}>Refresh</AppText>
+            </PressableScale>
+          </Animated.View>
         ) : (
           remaining.map((p) => {
-            const realIndex = profiles.indexOf(p);
+            const realIndex = cards.indexOf(p);
             const isTop = realIndex === index;
-            return (
-              <SwipeCard
-                key={p.id}
-                profile={p}
-                isTop={isTop}
-                onSwiped={onSwiped}
-              />
-            );
+            return <SwipeCard key={p.id + realIndex} profile={p} isTop={isTop} onSwiped={onSwiped} />;
           })
         )}
       </View>
 
-      {index < profiles.length ? (
-        <View style={[styles.actions, { paddingBottom: Spacing.md }]}>
+      {status !== 'loading' && index < cards.length ? (
+        <Animated.View entering={FadeInDown.springify()} style={[styles.actions, { paddingBottom: Spacing.md }]}>
           <ActionButton icon="close" color={Colors.error} size={64} onPress={() => swipeButton('left')} />
           <ActionButton icon="star" color={Colors.secondary} size={52} onPress={() => router.push('/premium')} />
           <ActionButton icon="heart" color={Colors.success} size={64} onPress={() => swipeButton('right')} />
-        </View>
+        </Animated.View>
       ) : null}
     </View>
   );
@@ -79,7 +92,7 @@ export default function Discover() {
 function ActionButton({ icon, color, size, onPress }: { icon: any; color: string; size: number; onPress: () => void }) {
   const { c } = useTheme();
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       style={[
         { width: size, height: size, borderRadius: size / 2, backgroundColor: c.card, borderWidth: 1, borderColor: c.border },
@@ -88,7 +101,7 @@ function ActionButton({ icon, color, size, onPress }: { icon: any; color: string
       ]}
     >
       <Ionicons name={icon} size={size * 0.42} color={color} />
-    </Pressable>
+    </PressableScale>
   );
 }
 

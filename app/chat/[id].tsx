@@ -1,40 +1,65 @@
-import React, { useState, useRef } from 'react';
-import { View, StyleSheet, FlatList, Pressable, KeyboardAvoidingView, Platform, TextInput } from 'react-native';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { View, StyleSheet, FlatList, KeyboardAvoidingView, Platform, TextInput } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { AppText } from '@/components/ui';
+import { PressableScale } from '@/components/PressableScale';
 import { Colors, Spacing, Radius, Type, Shadows } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeContext';
-import { demoChats, demoMessages, DemoMessage } from '@/data/demo';
+import { useAuth } from '@/context/AuthContext';
+import { demoChats, demoMessages } from '@/data/demo';
+import { firebaseEnabled } from '@/firebase/config';
+import { roomId, subscribeMessages, sendMessage, ChatMessage } from '@/firebase/chat';
 
-// Port of chatting UI. Real-time delivery stays on Firebase in the full port;
-// here it's local state so the conversation flow is testable on Expo Go.
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { c } = useTheme();
+  const { user } = useAuth();
   const thread = demoChats.find((t) => t.id === id) ?? demoChats[0];
-  const [messages, setMessages] = useState<DemoMessage[]>(demoMessages);
+
+  const live = firebaseEnabled && !!user && !user.isDemo;
+  const rid = live ? roomId(user!.id, String(id)) : '';
+
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    live ? [] : demoMessages.map((m) => ({ id: m.id, text: m.text, senderId: m.mine ? 'me' : 'them', createdAt: 0 }))
+  );
   const [text, setText] = useState('');
   const listRef = useRef<FlatList>(null);
 
-  const send = () => {
-    if (!text.trim()) return;
-    const m: DemoMessage = { id: Date.now().toString(), text: text.trim(), mine: true, time: 'now' };
-    setMessages((prev) => [...prev, m]);
+  useEffect(() => {
+    if (!live) return;
+    const unsub = subscribeMessages(rid, (msgs) => {
+      setMessages(msgs);
+      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 60);
+    });
+    return unsub;
+  }, [live, rid]);
+
+  const meId = live ? user!.id : 'me';
+
+  const send = useCallback(async () => {
+    const body = text.trim();
+    if (!body) return;
     setText('');
-    setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
-  };
+    if (live) {
+      await sendMessage(rid, user!.id, String(id), body);
+    } else {
+      setMessages((prev) => [...prev, { id: Date.now().toString(), text: body, senderId: 'me', createdAt: Date.now() }]);
+      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
+    }
+  }, [text, live, rid, user, id]);
 
   return (
     <View style={[styles.root, { backgroundColor: c.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.xs, borderBottomColor: c.border, backgroundColor: c.card }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10}>
+        <PressableScale onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={26} color={c.textPrimary} />
-        </Pressable>
+        </PressableScale>
         <Image source={{ uri: thread.avatar }} style={styles.avatar} contentFit="cover" />
         <View style={{ flex: 1 }}>
           <AppText variant="bodyL">{thread.name}</AppText>
@@ -42,8 +67,8 @@ export default function Chat() {
             {thread.online ? 'Online' : 'Offline'}
           </AppText>
         </View>
-        <Pressable hitSlop={10}><Ionicons name="call-outline" size={22} color={c.textSecondary} /></Pressable>
-        <Pressable hitSlop={10} style={{ marginLeft: Spacing.md }}><Ionicons name="videocam-outline" size={24} color={c.textSecondary} /></Pressable>
+        <Ionicons name="call-outline" size={22} color={c.textSecondary} />
+        <Ionicons name="videocam-outline" size={24} color={c.textSecondary} style={{ marginLeft: Spacing.md }} />
       </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={8}>
@@ -52,14 +77,25 @@ export default function Chat() {
           data={messages}
           keyExtractor={(m) => m.id}
           contentContainerStyle={{ padding: Spacing.screen, gap: Spacing.xs }}
-          renderItem={({ item }) => (
-            <View style={[styles.bubble, item.mine ? styles.mine : [styles.theirs, { backgroundColor: c.card, borderColor: c.border }]]}>
-              <AppText variant="bodyM" color={item.mine ? Colors.white : c.textPrimary}>{item.text}</AppText>
-              <AppText variant="caption" color={item.mine ? 'rgba(255,255,255,0.7)' : c.textMuted} style={{ marginTop: 2, alignSelf: 'flex-end' }}>
-                {item.time}
-              </AppText>
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+          ListEmptyComponent={
+            <View style={{ alignItems: 'center', paddingTop: Spacing.xxxl }}>
+              <AppText variant="bodyM" color={c.textMuted}>No messages here yet…</AppText>
+              <AppText variant="bodyS" color={c.textMuted}>Send a message to break the ice.</AppText>
             </View>
-          )}
+          }
+          renderItem={({ item }) => {
+            const mine = item.senderId === meId;
+            return (
+              <Animated.View
+                entering={FadeInDown.springify().damping(18)}
+                layout={LinearTransition.springify()}
+                style={[styles.bubble, mine ? styles.mine : [styles.theirs, { backgroundColor: c.card, borderColor: c.border }]]}
+              >
+                <AppText variant="bodyM" color={mine ? Colors.white : c.textPrimary}>{item.text}</AppText>
+              </Animated.View>
+            );
+          }}
         />
         <View style={[styles.inputBar, { paddingBottom: insets.bottom + Spacing.xs, backgroundColor: c.card, borderTopColor: c.border }]}>
           <TextInput
@@ -67,11 +103,13 @@ export default function Chat() {
             placeholderTextColor={c.textMuted}
             value={text}
             onChangeText={setText}
+            onSubmitEditing={send}
+            returnKeyType="send"
             style={[styles.input, { backgroundColor: c.background, color: c.textPrimary, borderColor: c.border }]}
           />
-          <Pressable onPress={send} style={[styles.sendBtn, Shadows.soft]}>
+          <PressableScale onPress={send} style={[styles.sendBtn, Shadows.soft]}>
             <Ionicons name="send" size={18} color={Colors.white} />
-          </Pressable>
+          </PressableScale>
         </View>
       </KeyboardAvoidingView>
     </View>
