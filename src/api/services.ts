@@ -81,6 +81,21 @@ export const matches = () => api.post<ProfilesResult>('matches', {});
 export const profile = (id: string | number, lats?: number | string, longs?: number | string) =>
   api.post<ApiResult>('profile', { profile_id: id, lats, longs });
 
+// ── Profile edit & KYC (multipart for photos / ID documents) ────────
+interface AccountResult extends ApiResult {
+  user?: Account;
+}
+
+/** PATCH /profile with JSON fields only. */
+export const updateProfile = (fields: Record<string, unknown>) =>
+  api.patch<AccountResult>('profile', fields);
+
+/** PATCH /profile with a multipart form (kept image URLs + new photo files). */
+export const updateProfileForm = (form: FormData) => api.patchForm<AccountResult>('profile', form);
+
+/** POST /identity (KYC) with a multipart form containing the ID document file. */
+export const submitIdentity = (form: FormData) => api.postForm<AccountResult>('identity', form);
+
 export const block = (targetId: string | number) => api.post('block', { target_id: targetId });
 export const report = (targetId: string | number, comment: string) =>
   api.post('report', { target_id: targetId, comment });

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setAuthToken } from '@/api/client';
-import { login as apiLogin, register as apiRegister, forgotPassword as apiForgot, RegisterInput } from '@/api/services';
+import { login as apiLogin, register as apiRegister, forgotPassword as apiForgot, fetchMe, RegisterInput } from '@/api/services';
 import { Account } from '@/data/models';
 
 export interface SessionUser {
@@ -15,6 +15,8 @@ export interface SessionUser {
   longs?: string;
   coin?: string;
   isSubscribe?: boolean;
+  isVerify?: string;
+  bio?: string;
   isDemo?: boolean;
 }
 
@@ -24,6 +26,8 @@ interface AuthValue {
   login: (identifier: string, password: string) => Promise<{ ok: boolean; message?: string }>;
   register: (input: RegisterInput) => Promise<{ ok: boolean; message?: string }>;
   resetPassword: (identifier: string, newPassword: string) => Promise<{ ok: boolean; message?: string }>;
+  /** Re-fetch the current account from the gateway and update the session. */
+  refreshUser: () => Promise<void>;
   loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -44,6 +48,8 @@ function toSession(u: Account): SessionUser {
     longs: u.longs,
     coin: u.coin,
     isSubscribe: u.is_subscribe === '1',
+    isVerify: u.is_verify,
+    bio: u.profile_bio,
   };
 }
 
@@ -115,6 +121,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await fetchMe();
+      if (res.ok && res.user) {
+        const next = toSession(res.user);
+        setUser(next);
+        await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(next));
+      }
+    } catch {
+      /* keep current session */
+    }
+  }, []);
+
   const loginDemo = useCallback(async () => {
     await persist({ id: 'demo', name: 'Guest', isDemo: true }, null);
   }, [persist]);
@@ -124,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [persist]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, resetPassword, loginDemo, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, resetPassword, refreshUser, loginDemo, logout }}>
       {children}
     </AuthContext.Provider>
   );
