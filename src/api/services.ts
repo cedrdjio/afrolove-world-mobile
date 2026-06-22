@@ -96,6 +96,9 @@ export const updateProfileForm = (form: FormData) => api.patchForm<AccountResult
 /** POST /identity (KYC) with a multipart form containing the ID document file. */
 export const submitIdentity = (form: FormData) => api.postForm<AccountResult>('identity', form);
 
+/** POST /upload — upload an image (e.g. a chat photo) and get its public URL. */
+export const uploadImage = (form: FormData) => api.postForm<{ ok: boolean; url: string }>('upload', form);
+
 export const block = (targetId: string | number) => api.post('block', { target_id: targetId });
 export const report = (targetId: string | number, comment: string) =>
   api.post('report', { target_id: targetId, comment });

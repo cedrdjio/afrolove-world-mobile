@@ -64,7 +64,7 @@ export default function ProfileDetail() {
         <Pressable style={[styles.circle, styles.bigHeart, Shadows.elevated]} onPress={() => router.replace('/(tabs)/matches')}>
           <Ionicons name="heart" size={32} color={Colors.white} />
         </Pressable>
-        <Pressable style={[styles.circle, { backgroundColor: c.card, borderColor: c.border }, Shadows.card]} onPress={() => router.push('/chat/' + p.id)}>
+        <Pressable style={[styles.circle, { backgroundColor: c.card, borderColor: c.border }, Shadows.card]} onPress={() => router.push({ pathname: '/chat/[id]', params: { id: p.id, name: p.name, avatar: p.images[0] ?? '' } })}>
           <Ionicons name="chatbubble" size={24} color={Colors.primary} />
         </Pressable>
       </View>

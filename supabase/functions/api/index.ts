@@ -445,6 +445,16 @@ const protectedRoutes: Record<string, Handler> = {
     return ok({ user: account(updated) });
   },
 
+  'POST upload': async (req, _b, uid) => {
+    const ct = req.headers.get('content-type') || '';
+    if (!ct.includes('multipart/form-data')) return fail('Expected multipart form data');
+    const form = await req.formData();
+    const file = form.get('photo0') ?? form.get('file');
+    if (!(file instanceof File)) return fail('No file provided');
+    const url = await uploadFile(file, `chat_${uid}`);
+    return ok({ url });
+  },
+
   'POST identity': async (req, b, uid) => {
     let img = s(b.img);
     const ct = req.headers.get('content-type') || '';

@@ -4,14 +4,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 import { Colors, Shadows } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeContext';
+import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 
 export default function TabsLayout() {
-  const { c } = useTheme();
+  const { c, isDark } = useTheme();
+  usePresenceHeartbeat();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.primary,
+        // In dark mode espresso is invisible on the dark bar → use camel gold.
+        tabBarActiveTintColor: isDark ? Colors.secondary : Colors.primary,
         tabBarInactiveTintColor: c.textMuted,
         tabBarShowLabel: false,
         tabBarStyle: {
