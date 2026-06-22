@@ -12,7 +12,7 @@
 // Envelope: success → { ok: true, ...data }   error → { ok: false, error }
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import bcrypt from 'npm:bcryptjs@2.4.3';
-import { SignJWT, jwtVerify } from 'https://esm.sh/jose@5.9.6';
+import { SignJWT, jwtVerify, importPKCS8 } from 'https://esm.sh/jose@5.9.6';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -286,6 +286,31 @@ const protectedRoutes: Record<string, Handler> = {
   'GET me': async (_r, _b, uid) => {
     const me = await getUser(uid!);
     return me ? ok({ user: account(me) }) : fail('User not found', 404);
+  },
+
+  // Mints a Firebase custom token (uid = this app user) so the client can
+  // signInWithCustomToken and Firestore rules can trust request.auth.uid.
+  // Requires the FIREBASE_SERVICE_ACCOUNT secret (the service-account JSON).
+  'POST auth/firebase-token': async (_r, _b, uid) => {
+    const raw = Deno.env.get('FIREBASE_SERVICE_ACCOUNT');
+    if (!raw) return fail('Firebase not configured', 500);
+    let sa: { client_email: string; private_key: string };
+    try {
+      sa = JSON.parse(raw);
+    } catch {
+      return fail('Invalid FIREBASE_SERVICE_ACCOUNT', 500);
+    }
+    const key = await importPKCS8(sa.private_key, 'RS256');
+    const aud = 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit';
+    const token = await new SignJWT({ uid: String(uid) })
+      .setProtectedHeader({ alg: 'RS256' })
+      .setIssuer(sa.client_email)
+      .setSubject(sa.client_email)
+      .setAudience(aud)
+      .setIssuedAt()
+      .setExpirationTime('1h')
+      .sign(key);
+    return ok({ token });
   },
 
   'POST home': async (_r, b, uid) => {
