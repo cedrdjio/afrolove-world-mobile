@@ -10,6 +10,8 @@ jobs:
   android:
     name: Build APK + AAB
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -50,3 +52,19 @@ jobs:
           name: afrilove-world-aab
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+
+      # Publish a GitHub Release so the APK/AAB have a direct download link
+      # (no zip, no login) — handy for installing on a phone.
+      - name: Publish to a Release (direct download)
+        if: github.ref == 'refs/heads/claude/clever-curie-i7onuy'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: Afrilove World — latest Android build
+          body: |
+            Latest Android build of Afrilove World.
+            - **app-release.apk** — install directly on a device (debug-signed, for testing).
+            - **app-release.aab** — Google Play upload (needs an upload key to publish).
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
