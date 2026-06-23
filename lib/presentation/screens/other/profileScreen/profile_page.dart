@@ -1,6 +1,7 @@
 ﻿// ignore_for_file: unused_local_variable, avoid_print, unnecessary_brace_in_string_interps, use_build_context_synchronously, non_constant_identifier_names
 
 import 'dart:convert';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:afrilove_world/Logic/cubits/Home_cubit/home_cubit.dart';
@@ -571,7 +572,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                                                             if (snapshot.connectionState == ConnectionState.done) {
                                                                                                               return CameraPreview(imagecontroller);
                                                                                                             } else {
-                                                                                                              return Center(child: CircularProgressIndicator(color: AppColors.appColor,));
+                                                                                                              return Center(child: AppLoader());
                                                                                                             }
                                                                                                           },
                                                                                                         ),
@@ -1378,7 +1379,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       profileloader ? Padding(
                         padding: const EdgeInsets.only(top: 300),
-                        child: Center(child: CircularProgressIndicator(color: AppColors.appColor,)),
+                        child: Center(child: AppLoader()),
                       ) : SizedBox()
                     ],
                   );
@@ -1386,13 +1387,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 else{
                   return Padding(
                     padding: const EdgeInsets.only(top: 300),
-                    child: Center(child: CircularProgressIndicator(color: AppColors.appColor,)),
+                    child: Center(child: AppLoader()),
                   );
                 }
               }
             ),
           ),
-        ) : Center(child: CircularProgressIndicator(color: AppColors.appColor,)),
+        ) : Center(child: AppLoader()),
       ),
     );
   }

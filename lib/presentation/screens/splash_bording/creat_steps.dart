@@ -1,5 +1,6 @@
 ﻿import 'dart:io';
 import 'package:afrilove_world/Logic/cubits/onBording_cubit/onbording_cubit.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/Logic/cubits/onBording_cubit/onbording_state.dart';
 import 'package:afrilove_world/core/config.dart';
 import 'package:afrilove_world/data/models/languagemodel.dart';
@@ -500,7 +501,7 @@ class _CreatStepsState extends State<CreatSteps> {
                 }
               }, builder: (context, state) {
                 if (state is LoadingState) {
-                  return CircularProgressIndicator(color: AppColors.appColor);
+                  return AppLoader();
                 } else {
                   return const SizedBox();
                 }

@@ -1,6 +1,7 @@
 ﻿// ignore_for_file: avoid_print, unused_local_variable
 
 import 'dart:convert';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:afrilove_world/presentation/firebase/chatting_provider.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/homeProvider/homeprovier.dart';
@@ -75,7 +76,7 @@ class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMi
       ),
       body: SafeArea(
         child: chattingProvider.isLoadingchat
-            ? Center(child: CircularProgressIndicator(color: AppColors.appColor))
+            ? Center(child: AppLoader())
             : Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(

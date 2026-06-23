@@ -1,5 +1,6 @@
 ﻿import 'package:afrilove_world/core/ui.dart';
 import 'package:flutter/material.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import '../core/config.dart';
@@ -49,7 +50,7 @@ class _CoinHistoryState extends State<CoinHistory> with TickerProviderStateMixin
         leading: const BackButtons(),
       ),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: byCoinProvider.payoutloading ?  Center(child: CircularProgressIndicator(color: AppColors.appColor,),) : Padding(
+      body: byCoinProvider.payoutloading ?  Center(child: AppLoader(),) : Padding(
         padding: const EdgeInsets.all(15),
         child: Column(
           children: [

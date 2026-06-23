@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lottie/lottie.dart';
@@ -274,7 +275,7 @@ class _Refer_And_EarnState extends State<Refer_And_Earn> {
           )
         ],
       )
-          : Center(child: CircularProgressIndicator(color: AppColors.appColor,)),
+          : Center(child: AppLoader()),
     );
   }
 }

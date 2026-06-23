@@ -1,5 +1,6 @@
 ﻿import 'package:afrilove_world/Logic/cubits/onBording_cubit/onbording_cubit.dart';
 import 'package:afrilove_world/Logic/cubits/onBording_cubit/onbording_state.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/bottombar.dart';
 import 'package:afrilove_world/presentation/screens/splash_bording/creat_steps.dart';
 import 'package:afrilove_world/presentation/screens/splash_bording/onBordingProvider/onbording_provider.dart';
@@ -740,7 +741,7 @@ class _LoginScreenState extends State<LoginScreen> {
               }
             }, builder: (context, state) {
               if (state is LoadingState) {
-                return Center(child: CircularProgressIndicator(color: AppColors.appColor));
+                return Center(child: AppLoader());
               } else {
                 return const SizedBox();
               }
@@ -766,7 +767,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               if(state is AuthLoading) {
 
-                return Center(child: CircularProgressIndicator(color: AppColors.appColor));
+                return Center(child: AppLoader());
 
               } else {
 

@@ -1,5 +1,6 @@
 ﻿import 'package:afrilove_world/core/config.dart';
 import 'package:flutter/material.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:provider/provider.dart';
 import '../core/ui.dart';
 import '../language/localization/app_localization.dart';
@@ -115,7 +116,7 @@ class _Coin_Withdraw_ScreenState extends State<Coin_Withdraw_Screen> {
             ],
           ),
         ),
-      ) : Center(child: CircularProgressIndicator(color: AppColors.appColor,)),
+      ) : Center(child: AppLoader()),
     );
   }
 }

@@ -1,5 +1,6 @@
 ﻿import 'dart:io';
 import 'package:afrilove_world/Logic/cubits/editProfile_cubit/editprofile_cubit.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/Logic/cubits/editProfile_cubit/editprofile_state.dart';
 import 'package:afrilove_world/Logic/cubits/onBording_cubit/onbording_cubit.dart';
 import 'package:afrilove_world/core/config.dart';
@@ -277,7 +278,7 @@ class _EditProfileState extends State<EditProfile> {
           builder: (context, state) {
             if (state is EditLoadingState) {
               return Center(
-                child: CircularProgressIndicator(color: AppColors.appColor),
+                child: AppLoader(),
               );
             } else {
               return Stack(
@@ -1851,7 +1852,7 @@ class _EditProfileState extends State<EditProfile> {
                   BlocBuilder<EditProfileCubit, EditProfileState>(
                     builder: (context, state){
                     if(state is EditInnerLoadingState) {
-                      return CircularProgressIndicator(color: AppColors.appColor);
+                      return AppLoader();
                     }
                     return const SizedBox();
                   },)

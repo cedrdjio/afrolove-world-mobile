@@ -1,5 +1,6 @@
 ﻿import 'package:carousel_slider/carousel_slider.dart';
 import 'package:afrilove_world/Logic/cubits/Home_cubit/home_cubit.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/firebase_accesstoken.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/homeProvider/homeprovier.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/notification_page.dart';
@@ -206,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: BlocConsumer<HomePageCubit, HomePageStates>(
           builder: (context1, state) {
             if (state is HomeLoadingState) {
-              return Center(child: CircularProgressIndicator(color: AppColors.appColor));
+              return Center(child: AppLoader());
             } else if (state is HomeCompleteState) {
               return state.homeData.profilelist!.isEmpty
                   ? Padding(

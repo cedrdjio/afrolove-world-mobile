@@ -1,6 +1,7 @@
 ﻿// ignore_for_file: deprecated_member_use, prefer_typing_uninitialized_variables, avoid_print
 
 import 'dart:ui';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:afrilove_world/core/config.dart';
 import 'package:afrilove_world/data/models/detailsmodel.dart';
@@ -452,7 +453,7 @@ class _DetailScreenState extends State<DetailScreen> {
           }
         ),
         body: detailProvider.isLoading
-            ? Center(child: CircularProgressIndicator(color: AppColors.appColor))
+            ? Center(child: AppLoader())
             : CustomScrollView(
                 slivers: [
                   SliverAppBar(

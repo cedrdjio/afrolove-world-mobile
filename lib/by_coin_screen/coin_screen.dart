@@ -1,6 +1,7 @@
 ﻿// ignore_for_file: deprecated_member_use, avoid_print
 
 import 'package:afrilove_world/by_coin_screen/coin_history.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/core/ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -317,7 +318,7 @@ class _ByCoiinState extends State<ByCoiin> {
                                                       ),
                                                     );
                                                   }),
-                                            ) : Center(child: CircularProgressIndicator(color: AppColors.appColor,)),
+                                            ) : Center(child: AppLoader()),
                                             const SizedBox(height: 10,),
                                             Row(
                                               children: [
@@ -1248,7 +1249,7 @@ class _ByCoiinState extends State<ByCoiin> {
                                     ],
                                   ),
                                 ),
-                              ) : Center(child: CircularProgressIndicator(color: AppColors.appColor,)),
+                              ) : Center(child: AppLoader()),
                               const SizedBox(height: 10,),
                             ],
                           ),
@@ -1257,12 +1258,12 @@ class _ByCoiinState extends State<ByCoiin> {
 
 
                     }else{
-                      return Center(child: CircularProgressIndicator(color: AppColors.appColor,));
+                      return Center(child: AppLoader());
                     }
                   }
                   );
                 }else{
-                  return Center(child: CircularProgressIndicator(color: AppColors.appColor,));
+                  return Center(child: AppLoader());
                 }
               }
           ),

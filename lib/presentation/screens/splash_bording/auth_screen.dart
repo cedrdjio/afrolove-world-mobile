@@ -1,5 +1,6 @@
 ﻿import 'dart:async';
 import 'package:camera/camera.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/Logic/cubits/auth_cubit/auth_cubit.dart';
 import 'package:afrilove_world/Logic/cubits/auth_cubit/auth_state.dart';
 import 'package:afrilove_world/core/ui.dart';
@@ -195,7 +196,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
               }, builder: (context, state) {
                 if (state is AuthLoading) {
-                  return Center(child: CircularProgressIndicator(color: AppColors.appColor));
+                  return Center(child: AppLoader());
                 } else {
                   return const SizedBox();
                 }

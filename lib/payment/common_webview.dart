@@ -1,5 +1,6 @@
 ﻿import 'dart:async';
 import 'package:afrilove_world/core/ui.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -81,7 +82,7 @@ class _PaymentWebVIewState extends State<PaymentWebVIew> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: AppColors.appColor),
+                    AppLoader(),
                     SizedBox(height: 20),
                     SizedBox(
                       width: 300,

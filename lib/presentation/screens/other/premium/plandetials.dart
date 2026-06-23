@@ -1,5 +1,6 @@
 ﻿import 'package:afrilove_world/Logic/cubits/Home_cubit/home_cubit.dart';
 import 'package:afrilove_world/Logic/cubits/Home_cubit/homestate.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/homeProvider/homeprovier.dart';
 import 'package:afrilove_world/presentation/screens/other/premium/premium.dart';
 import 'package:afrilove_world/presentation/widgets/main_button.dart';
@@ -133,7 +134,7 @@ class _PlanDetilsState extends State<PlanDetils> {
               ),
             );
           }else{
-             return Center(child: CircularProgressIndicator(color: AppColors.appColor));
+             return Center(child: AppLoader());
            }
 
         }

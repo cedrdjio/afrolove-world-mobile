@@ -1,6 +1,7 @@
 ﻿// import 'dart:nativewrappers/_internal/vm/lib/typed_data_patch.dart';
 
 import 'dart:async';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 
 import 'package:afrilove_world/core/config.dart';
 // import 'package:afrilove_world/core/ui.dart';
@@ -81,7 +82,7 @@ class _MapScreenState extends State<MapScreen> {
     return Scaffold(
       body: SafeArea(
         child: homeProvider.isLoading
-            ? Center(child: CircularProgressIndicator(color: AppColors.appColor))
+            ? Center(child: AppLoader())
             : Stack(
                 children: [
 

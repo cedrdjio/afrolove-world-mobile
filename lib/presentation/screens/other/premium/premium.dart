@@ -1,6 +1,7 @@
 ﻿// ignore_for_file: avoid_print
 
 import 'package:afrilove_world/Logic/cubits/Home_cubit/home_cubit.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/Logic/cubits/Home_cubit/homestate.dart';
 import 'package:afrilove_world/Logic/cubits/premium_cubit/premium_bloc.dart';
 import 'package:afrilove_world/Logic/cubits/premium_cubit/premium_state.dart';
@@ -814,7 +815,7 @@ void handleExternalWallet(ExternalWalletResponse response) {
                   }
                 },);
                 }else{
-                return Center(child: CircularProgressIndicator(color: AppColors.appColor));
+                return Center(child: AppLoader());
               }
             }
           ),

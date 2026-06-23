@@ -1,6 +1,7 @@
 ﻿// ignore_for_file: avoid_print, prefer_typing_uninitialized_variables
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/language/localization/app_localization.dart';
 import 'package:afrilove_world/presentation/firebase/chat_service.dart';
 import 'package:afrilove_world/presentation/firebase/chatting_provider.dart';
@@ -396,7 +397,7 @@ class _ChattingPageState extends State<ChattingPage> {
                     ],
                   ),
                   chattingProvider.isLoading
-                      ? CircularProgressIndicator(color: AppColors.appColor)
+                      ? AppLoader()
                       : const SizedBox(),
                 ],
               );

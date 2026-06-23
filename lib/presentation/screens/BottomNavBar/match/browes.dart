@@ -1,5 +1,6 @@
 ﻿import 'dart:ui';
 import 'package:afrilove_world/Logic/cubits/match_cubit/match_cubit.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:afrilove_world/Logic/cubits/match_cubit/match_states.dart';
 import 'package:afrilove_world/core/config.dart';
 import 'package:afrilove_world/core/ui.dart';
@@ -150,7 +151,7 @@ class _BrowesPage extends State<BrowesPage> {
             );
           } else {
             return Center(
-              child: CircularProgressIndicator(color: AppColors.appColor),
+              child: AppLoader(),
             );
           }
         },

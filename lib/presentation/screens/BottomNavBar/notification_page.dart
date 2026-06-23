@@ -1,5 +1,6 @@
 ﻿import 'package:afrilove_world/presentation/screens/BottomNavBar/homeProvider/homeprovier.dart';
 import 'package:afrilove_world/presentation/widgets/other_widget.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -32,7 +33,7 @@ class _NotificationPageState extends State<NotificationPage> {
     return Scaffold(
       appBar: AppBar(surfaceTintColor: Colors.transparent,backgroundColor: Theme.of(context).scaffoldBackgroundColor,leading: const BackButtons(),title: Text(AppLocalizations.of(context)?.translate("Notifications") ?? "Notifications",style: Theme.of(context).textTheme.headlineSmall,),),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: homeProvider.isNotification ? Center(child: CircularProgressIndicator(color: AppColors.appColor)) :    homeProvider.notificationModel.notificationData!.isEmpty ? const Column(
+      body: homeProvider.isNotification ? Center(child: AppLoader()) :    homeProvider.notificationModel.notificationData!.isEmpty ? const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

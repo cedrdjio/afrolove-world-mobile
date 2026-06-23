@@ -1,6 +1,7 @@
 ﻿// ignore_for_file: avoid_print
 
 import 'package:afrilove_world/core/config.dart';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -141,7 +142,7 @@ class _StripePaymentWebState extends State<StripePaymentWeb> {
         ),
         body: Center(
           child: Container(
-            child: CircularProgressIndicator(color: AppColors.appColor),
+            child: AppLoader(),
           ),
         ),
       );

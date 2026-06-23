@@ -1,6 +1,7 @@
 ﻿// ignore_for_file: avoid_print, prefer_typing_uninitialized_variables
 
 import 'dart:convert';
+import 'package:afrilove_world/presentation/widgets/app_loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:afrilove_world/core/api.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/homeProvider/homeprovier.dart';
@@ -208,7 +209,7 @@ void _scrollToLastMessage() {
       Consumer<ChatServices>(
         builder: (context, value, child) =>
         value.loading
-            ? Center(child: CircularProgressIndicator(color: AppColors.appColor))
+            ? Center(child: AppLoader())
             : value.messages.isEmpty
             ? const Expanded(
           child: Text('Say Hello!',
