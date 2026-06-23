@@ -1,5 +1,34 @@
 import 'package:flutter/material.dart';
 
+/// Clean global page transition: a soft fade with a subtle upward slide.
+/// Applied to every route via the app theme for a smooth, premium feel.
+class AppPageTransitionsBuilder extends PageTransitionsBuilder {
+  const AppPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween<Offset>(begin: const Offset(0, 0.035), end: Offset.zero).animate(curved),
+        child: child,
+      ),
+    );
+  }
+}
+
+const _appPageTransitions = PageTransitionsTheme(builders: {
+  TargetPlatform.android: AppPageTransitionsBuilder(),
+  TargetPlatform.iOS: AppPageTransitionsBuilder(),
+});
+
 class AppColors {
   // AfriLove World palette — warm espresso + camel gold on ivory.
   static Color appColor = const Color(0xff2C1B14); // espresso (primary)
@@ -29,6 +58,7 @@ class Themes {
     dividerColor: Colors.transparent,
     brightness: Brightness.light,
     fontFamily: FontFamilyy.regular,
+    pageTransitionsTheme: _appPageTransitions,
     bottomSheetTheme: const BottomSheetThemeData(backgroundColor: Colors.white),
     outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -88,6 +118,7 @@ class Themes {
     hoverColor: Colors.transparent,
     dividerColor: Colors.transparent,
     fontFamily: FontFamilyy.regular,
+    pageTransitionsTheme: _appPageTransitions,
     bottomSheetTheme: BottomSheetThemeData(backgroundColor: AppColors.darkBgColor),
     cardColor: AppColors.darkContainer,
     dividerTheme: DividerThemeData(color: AppColors.darkBorderColor),
