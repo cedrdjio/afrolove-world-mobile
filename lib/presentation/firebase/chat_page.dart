@@ -4,8 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:afrilove_world/language/localization/app_localization.dart';
 import 'package:afrilove_world/presentation/firebase/chat_service.dart';
 import 'package:afrilove_world/presentation/firebase/chatting_provider.dart';
-import 'package:afrilove_world/presentation/firebase/videocall_screen.dart';
-import 'package:afrilove_world/presentation/screens/AudioCall/audio_callingscreen.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/homeProvider/homeprovier.dart';
 import 'package:afrilove_world/presentation/screens/other/premium/premium.dart';
 import 'package:afrilove_world/presentation/widgets/other_widget.dart';
@@ -460,93 +458,6 @@ class _ChattingPageState extends State<ChattingPage> {
                     ),
                   ),
                   const Spacer(flex: 2),
-                  InkWell(
-                      onTap: () {
-                        if (state.homeData.audioVideo == "0") {
-                          Navigator.pushNamed(context, PremiumScreen.premiumScreenRoute);
-                        }
-                        else {
-                          chattingProvider.updateIsLoading(true);
-                          List<String> ids = [
-                            Provider.of<HomeProvider>(context, listen: false).uid,
-                            resiverUserId
-                          ];
-                          ids.sort();
-                          String vcRoomId = ids.join("_");
-
-                          isAudio(vcRoomId, null).then((value) {
-                            _firebaseStorage.collection("chat_rooms").doc(vcRoomId).collection("isVcAvailable").doc(vcRoomId).get().then((value) {
-
-                              chattingProvider.audioNotificationMessage(
-                                  "In Coming Audio Call From ${Provider.of<HomeProvider>(context, listen: false).userlocalData.userLogin!.name}",
-                                  Provider.of<HomeProvider>(context, listen: false).userlocalData.userLogin!.name.toString(),
-                                  chattingProvider.fmctoken, context, vcRoomId)
-                                  .then((value) {
-                                chattingProvider.updateIsLoading(false);
-                                print("widget.userData!:- ${widget.userData!}");
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AudioCallingScreen(userData: widget.userData!, channel: vcRoomId),
-                                    ));
-                              });
-
-                              // }
-                            });
-                          });
-                        }
-
-
-                      },
-                      child: SvgPicture.asset(
-                        "assets/icons/Call.svg",
-                        height: 25,
-                        width: 25,
-                        colorFilter: ColorFilter.mode(state.homeData.audioVideo == "0" ? Theme.of(context).indicatorColor.withOpacity(0.2)  : Theme.of(context).indicatorColor, BlendMode.srcIn),
-                      )),
-                  const Spacer(),
-                  InkWell(
-                      onTap: () {
-                        print("---------------${chattingProvider.fmctoken}");
-                        if (state.homeData.audioVideo == "0") {
-                          print("************** if");
-                          Navigator.pushNamed(context, PremiumScreen.premiumScreenRoute);
-                        }
-                        else {
-                          print("************** else");
-                          chattingProvider.updateIsLoading(true);
-                          List<String> ids = [
-                            Provider.of<HomeProvider>(context, listen: false).uid,
-                            resiverUserId
-                          ];
-                          ids.sort();
-                          String vcRoomId = ids.join("_");
-                          isvc(vcRoomId, true).then((value) {
-                            _firebaseStorage.collection("chat_rooms").doc(vcRoomId).collection("isVcAvailable").doc(vcRoomId).get().then((value) {
-                              if (value.data()!["isVc"] == true) {
-                                print("qqqqqqqqqqqqqqqq");
-                                chattingProvider.vcNotificationMessage(
-                                    "In Coming Video Call From ${Provider.of<HomeProvider>(context, listen: false).userlocalData.userLogin!.name}",
-                                    Provider.of<HomeProvider>(context, listen: false).userlocalData.userLogin!.name.toString(),
-                                    chattingProvider.fmctoken,
-                                    context,
-                                    vcRoomId)
-                                    .then((value) {
-                                  chattingProvider.updateIsLoading(false);
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => VideoCall(channel: vcRoomId),));
-                                });
-                              }
-                            });
-                          });
-                        }
-                      },
-                      child: SvgPicture.asset(
-                        "assets/icons/Video.svg",
-                        height: 25,
-                        width: 25,
-                        colorFilter: ColorFilter.mode(state.homeData.audioVideo == "0" ? Theme.of(context).indicatorColor.withOpacity(0.2) : Theme.of(context).indicatorColor, BlendMode.srcIn),
-                      )),
-                  const Spacer(),
                   PopupMenuButton(
                     tooltip: '',
                     padding: const EdgeInsets.all(0),

@@ -12,9 +12,6 @@ import 'package:afrilove_world/language/localization/app_localization_setup.dart
 import 'package:afrilove_world/presentation/firebase/auth_firebase.dart';
 import 'package:afrilove_world/presentation/firebase/chat_service.dart';
 import 'package:afrilove_world/presentation/firebase/chatting_provider.dart';
-import 'package:afrilove_world/presentation/firebase/pickup_callpage.dart';
-import 'package:afrilove_world/presentation/firebase/vc_provider.dart';
-import 'package:afrilove_world/presentation/screens/AudioCall/audiocall_provider.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/chats.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/homeProvider/homeprovier.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/match/matchprovider.dart';
@@ -48,19 +45,6 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  FirebaseMessaging.onMessage.listen((event) {
-
-    if(event.data["vcId"] != null) {
-
-      navigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => PickUpCall(userData: event.data,isAudio: false)));
-
-    }else if(event.data["Audio"] != null){
-
-      navigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => PickUpCall(userData: event.data,isAudio: true)));
-
-    }
-
-  });
   runApp(MyApp());
   initializeNotifications();
   listenFCM();
@@ -102,8 +86,6 @@ class MyApp extends StatelessWidget {
                   ChangeNotifierProvider(create: (context) => LikeMatchProvider()),
                   ChangeNotifierProvider(create: (context) => FirebaseAuthService()),
                   ChangeNotifierProvider(create: (context) => ChattingProvider()),
-                  ChangeNotifierProvider(create: (context) => VcProvider()),
-                  ChangeNotifierProvider(create: (context) => AudioCallProvider()),
                   ChangeNotifierProvider(create: (context) => PremiumProvider()),
                   ChangeNotifierProvider(create: (context) => WalleteProvider()),
                   ChangeNotifierProvider(create: (context) => ByCoinProvider()),

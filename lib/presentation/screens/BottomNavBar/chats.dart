@@ -3,7 +3,6 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:afrilove_world/presentation/firebase/chatting_provider.dart';
-import 'package:afrilove_world/presentation/firebase/pickup_callpage.dart';
 import 'package:afrilove_world/presentation/screens/BottomNavBar/homeProvider/homeprovier.dart';
 import 'package:afrilove_world/presentation/widgets/appbarr.dart';
 import 'package:afrilove_world/presentation/widgets/other_widget.dart';
@@ -695,24 +694,14 @@ Future<void> initializeNotifications() async {
       if (payload != null) {
         Map<String, dynamic> data = jsonDecode(payload);
 
-        if (data["vcId"] == "null" && data["Audio"] == "null") {
-          navigatorKey.currentState?.push(MaterialPageRoute(
-            builder: (context) => ChattingPage(
-              resiverUserId: data["id"],
-              resiverUseremail: data["name"],
-              proPic: data["propic"],
-              userData: data,
-            ),
-          ));
-        } else if (data["vcId"] != null && data["Audio"] == "null") {
-          navigatorKey.currentState?.push(MaterialPageRoute(
-            builder: (context) => PickUpCall(userData: data, isAudio: false),
-          ));
-        } else if (data["Audio"] != null) {
-          navigatorKey.currentState?.push(MaterialPageRoute(
-            builder: (context) => PickUpCall(userData: data, isAudio: true),
-          ));
-        }
+        navigatorKey.currentState?.push(MaterialPageRoute(
+          builder: (context) => ChattingPage(
+            resiverUserId: data["id"],
+            resiverUseremail: data["name"],
+            proPic: data["propic"],
+            userData: data,
+          ),
+        ));
       }
     },
   );
