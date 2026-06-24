@@ -453,7 +453,12 @@ newPassWord(context,mobileNumber,ccode){
   double? lat;
   double? long;
 
+  bool _navigated = false;
+
   getCurrentLatAndLong(context) async {
+    // Safety net: never let the splash hang. If permission/GPS stalls,
+    // proceed with default coordinates after at most 10s.
+    Future.delayed(const Duration(seconds: 10), () => nextPage(context));
     LocationPermission permission;
     permission = await Geolocator.checkPermission();
     permission = await Geolocator.requestPermission();
@@ -477,6 +482,8 @@ newPassWord(context,mobileNumber,ccode){
   }
 
   nextPage(context) {
+    if (_navigated) return; // guard against the location flow + watchdog racing
+    _navigated = true;
     Future.delayed(const Duration(seconds: 1), () {
       Preferences.fetchUserDetails().then((value) async {
         SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -501,6 +508,12 @@ newPassWord(context,mobileNumber,ccode){
   }
 
   Future<Position> locateUser() async {
-    return Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    // Hard time limit so the splash never hangs waiting for a GPS fix:
+    // on timeout this throws and the caller falls back to default coords
+    // and proceeds to the next screen.
+    return Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.medium,
+      timeLimit: const Duration(seconds: 8),
+    );
   }
 }
